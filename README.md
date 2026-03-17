@@ -1,16 +1,29 @@
-# myapp
+# exeOS
 
-A new Flutter project.
+`exeOS` is the shared web and future iOS client for the live wallpaper platform.
 
-## Getting Started
+## Current scope
 
-This project is a starting point for a Flutter application.
+Phase A focuses on a productized shell:
 
-A few resources to get you started if this is your first Flutter project:
+- branded app structure
+- router-based navigation
+- catalog-ready screen layout
+- settings and theme handling
+- web hosting target via Firebase App Hosting
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+Firebase auth, feed integration, favorites, entitlements, and payments are intentionally out of scope for this step and will be added in later phases.
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+## Local development
+
+```bash
+flutter pub get
+flutter run -d chrome
+```
+
+## Near-term roadmap
+
+1. Google sign-in on web
+2. Read-only wallpaper catalog from existing hub feeds
+3. Preview/detail flow
+4. App Hosting rollout on the `exeos` backend

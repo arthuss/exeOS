@@ -1,4 +1,4 @@
-package com.example.myapp
+package pro.dotexe.exeos
 
 import io.flutter.embedding.android.FlutterActivity
 

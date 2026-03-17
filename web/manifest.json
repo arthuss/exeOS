@@ -1,11 +1,11 @@
 {
-    "name": "myapp",
-    "short_name": "myapp",
+    "name": "exeOS",
+    "short_name": "exeOS",
     "start_url": ".",
     "display": "standalone",
-    "background_color": "#0175C2",
-    "theme_color": "#0175C2",
-    "description": "A new Flutter project.",
+    "background_color": "#08111D",
+    "theme_color": "#08111D",
+    "description": "exeOS brings the live wallpaper catalog to web and future iOS builds.",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
     "icons": [
