@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../catalog/presentation/widgets/catalog_preview_section.dart';
+
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
 
@@ -54,7 +56,7 @@ class HomeScreen extends StatelessWidget {
                 FilledButton.icon(
                   onPressed: () => context.go('/catalog'),
                   icon: const Icon(Icons.grid_view_rounded),
-                  label: const Text('Open catalog'),
+                  label: const Text('Full catalog'),
                 ),
                 OutlinedButton.icon(
                   onPressed: () => context.go('/settings'),
@@ -62,6 +64,15 @@ class HomeScreen extends StatelessWidget {
                   label: const Text('App settings'),
                 ),
               ],
+            ),
+            const SizedBox(height: 28),
+            CatalogPreviewSection(
+              title: 'Preview catalog',
+              description:
+                  'The catalog belongs directly on the landing surface. These cards are visual shell placeholders so we can tune spacing, hierarchy, and preview density before wiring in the real feed.',
+              includeSurface: true,
+              showBrowseAction: true,
+              onBrowseTap: () => context.go('/catalog'),
             ),
             const SizedBox(height: 28),
             const _FeatureCard(

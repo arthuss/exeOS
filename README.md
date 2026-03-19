@@ -8,7 +8,7 @@ Phase A focuses on a productized shell:
 
 - branded app structure
 - router-based navigation
-- catalog-ready screen layout
+- catalog-first landing surface
 - settings and theme handling
 - web hosting target via Firebase Hosting
 
@@ -43,5 +43,6 @@ firebase target:apply hosting webapp dotexe-pro
 Deploy the current Flutter web app:
 
 ```bash
+$env:Path = 'C:\tools\flutter\bin;' + $env:Path
 firebase deploy --only hosting:webapp
 ```

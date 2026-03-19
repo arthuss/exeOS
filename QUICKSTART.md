@@ -1,0 +1,58 @@
+# QUICKSTART: exeOS
+
+Repo: `G:\workspaces\AndroidStudioProjects\exeOS`
+
+## Lokale Entwicklung
+
+```powershell
+cd G:\workspaces\AndroidStudioProjects\exeOS
+$env:Path = 'C:\tools\flutter\bin;' + $env:Path
+flutter pub get
+flutter analyze
+flutter test
+flutter run -d chrome
+```
+
+## Lokaler Browser-Preview auf festem Port
+
+```powershell
+cd G:\workspaces\AndroidStudioProjects\exeOS
+$env:Path = 'C:\tools\flutter\bin;' + $env:Path
+flutter run -d web-server --web-hostname 127.0.0.1 --web-port 4111
+```
+
+Dann im Browser:
+- `http://127.0.0.1:4111`
+
+## Firebase Hosting
+
+Projekt:
+- `wallpaper-management-hub`
+
+Site:
+- `dotexe-pro`
+- `https://dotexe-pro.web.app`
+
+Einmalig:
+
+```powershell
+cd G:\workspaces\AndroidStudioProjects\exeOS
+firebase experiments:enable webframeworks
+firebase target:apply hosting webapp dotexe-pro --project wallpaper-management-hub
+```
+
+Deploy:
+
+```powershell
+cd G:\workspaces\AndroidStudioProjects\exeOS
+$env:Path = 'C:\tools\flutter\bin;' + $env:Path
+firebase deploy --only hosting:webapp --project wallpaper-management-hub
+```
+
+## Custom Domain
+
+Aktuell angebunden:
+- `www.dotexe.pro`
+
+Ziel:
+- `www.dotexe.pro -> dotexe-pro.web.app`

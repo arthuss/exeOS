@@ -9,6 +9,7 @@ void main() {
 
     expect(find.text('exeOS'), findsWidgets);
     expect(find.text('Web catalog for animated wallpapers'), findsOneWidget);
-    expect(find.text('Open catalog'), findsOneWidget);
+    expect(find.text('Full catalog'), findsOneWidget);
+    expect(find.text('Preview catalog'), findsOneWidget);
   });
 }
