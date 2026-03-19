@@ -1,0 +1,6 @@
+{
+  "hosting": {
+    "target": "webapp",
+    "source": "."
+  }
+}

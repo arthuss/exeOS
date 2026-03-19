@@ -15,7 +15,7 @@ It is not responsible for Android. Existing Android functionality stays in the n
 2. Add stable navigation and screen structure
 3. Integrate Firebase and Google sign-in on web
 4. Consume public catalog feeds from the existing hub
-5. Deploy the web app through Firebase App Hosting (`exeos`)
+5. Deploy the web app through Firebase Hosting (`dotexe-pro`)
 
 ## Later phases
 
@@ -23,3 +23,4 @@ It is not responsible for Android. Existing Android functionality stays in the n
 - web payments
 - Apple sign-in
 - iOS-specific media flow for Live Photo or wallpaper export
+

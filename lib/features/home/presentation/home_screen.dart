@@ -67,7 +67,7 @@ class HomeScreen extends StatelessWidget {
             const _FeatureCard(
               title: 'Hosted web front end',
               body:
-                  'This repo will drive the public web app on the dedicated exeos App Hosting backend instead of sharing Android presentation code.',
+                  'This repo drives the public web app on the dedicated dotexe-pro Firebase Hosting site instead of sharing Android presentation code.',
               icon: Icons.language_rounded,
             ),
             const SizedBox(height: 16),
@@ -145,3 +145,4 @@ class _FeatureCard extends StatelessWidget {
     );
   }
 }
+

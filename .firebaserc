@@ -1,0 +1,15 @@
+{
+  "projects": {
+    "default": "wallpaper-management-hub"
+  },
+  "targets": {
+    "wallpaper-management-hub": {
+      "hosting": {
+        "webapp": [
+          "dotexe-pro"
+        ]
+      }
+    }
+  },
+  "etags": {}
+}
