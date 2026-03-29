@@ -12,6 +12,7 @@ class CatalogPreviewSection extends StatelessWidget {
     this.includeSurface = false,
     this.showBrowseAction = false,
     this.onBrowseTap,
+    this.onItemTap,
     this.layout = CatalogPreviewLayout.full,
   });
 
@@ -20,6 +21,7 @@ class CatalogPreviewSection extends StatelessWidget {
   final bool includeSurface;
   final bool showBrowseAction;
   final VoidCallback? onBrowseTap;
+  final ValueChanged<CatalogFeedItem>? onItemTap;
   final CatalogPreviewLayout layout;
 
   static const Color _base = Color(0xFF0A0F18);
@@ -29,6 +31,13 @@ class CatalogPreviewSection extends StatelessWidget {
   static const Color _text = Color(0xFFF3F6FF);
   static const Color _muted = Color(0xFFA8B3CB);
   static const Color _accent = Color(0xFF63D5FF);
+  static const Color baseColor = _base;
+  static const Color cardColor = _card;
+  static const Color cardRaisedColor = _cardRaised;
+  static const Color outlineColor = _outline;
+  static const Color textColor = _text;
+  static const Color mutedColor = _muted;
+  static const Color accentColor = _accent;
 
   @override
   Widget build(BuildContext context) {
@@ -41,6 +50,7 @@ class CatalogPreviewSection extends StatelessWidget {
             description: description,
             showBrowseAction: showBrowseAction,
             onBrowseTap: onBrowseTap,
+            onItemTap: onItemTap,
             layout: layout,
             data: snapshot.data!,
           ),
@@ -87,6 +97,7 @@ class _CatalogBody extends StatelessWidget {
     required this.description,
     required this.showBrowseAction,
     required this.onBrowseTap,
+    required this.onItemTap,
     required this.layout,
     required this.data,
   });
@@ -95,6 +106,7 @@ class _CatalogBody extends StatelessWidget {
   final String? description;
   final bool showBrowseAction;
   final VoidCallback? onBrowseTap;
+  final ValueChanged<CatalogFeedItem>? onItemTap;
   final CatalogPreviewLayout layout;
   final CatalogPageData data;
 
@@ -198,7 +210,7 @@ class _CatalogBody extends StatelessWidget {
           onBrowseTap: onBrowseTap,
         ),
         const SizedBox(height: 14),
-        _WallpaperGrid(items: latestItems),
+        _WallpaperGrid(items: latestItems, onItemTap: onItemTap),
         for (final shelf in shelves) ...[
           const SizedBox(height: 28),
           _SectionHeader(
@@ -208,7 +220,7 @@ class _CatalogBody extends StatelessWidget {
             onBrowseTap: onBrowseTap,
           ),
           const SizedBox(height: 14),
-          _WallpaperGrid(items: shelf.items),
+          _WallpaperGrid(items: shelf.items, onItemTap: onItemTap),
         ],
       ],
     );
@@ -424,9 +436,10 @@ class _TagChip extends StatelessWidget {
 }
 
 class _WallpaperGrid extends StatelessWidget {
-  const _WallpaperGrid({required this.items});
+  const _WallpaperGrid({required this.items, this.onItemTap});
 
   final List<CatalogFeedItem> items;
+  final ValueChanged<CatalogFeedItem>? onItemTap;
 
   @override
   Widget build(BuildContext context) {
@@ -447,7 +460,7 @@ class _WallpaperGrid extends StatelessWidget {
             for (final item in items)
               SizedBox(
                 width: width,
-                child: _WallpaperCard(item: item),
+                child: _WallpaperCard(item: item, onTap: onItemTap),
               ),
           ],
         );
@@ -457,9 +470,10 @@ class _WallpaperGrid extends StatelessWidget {
 }
 
 class _WallpaperCard extends StatelessWidget {
-  const _WallpaperCard({required this.item});
+  const _WallpaperCard({required this.item, this.onTap});
 
   final CatalogFeedItem item;
+  final ValueChanged<CatalogFeedItem>? onTap;
 
   Color get _tierColor {
     switch (item.tierId?.toLowerCase()) {
@@ -480,7 +494,7 @@ class _WallpaperCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
+    final card = Container(
       decoration: BoxDecoration(
         color: CatalogPreviewSection._card,
         borderRadius: BorderRadius.circular(24),
@@ -589,6 +603,19 @@ class _WallpaperCard extends StatelessWidget {
             ),
           ),
         ],
+      ),
+    );
+
+    if (onTap == null) {
+      return card;
+    }
+
+    return MouseRegion(
+      cursor: SystemMouseCursors.click,
+      child: GestureDetector(
+        behavior: HitTestBehavior.opaque,
+        onTap: () => onTap!(item),
+        child: card,
       ),
     );
   }

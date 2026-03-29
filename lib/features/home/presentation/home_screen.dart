@@ -73,6 +73,8 @@ class HomeScreen extends StatelessWidget {
               includeSurface: true,
               showBrowseAction: true,
               onBrowseTap: () => context.go('/catalog'),
+              onItemTap: (item) =>
+                  context.push('/catalog/${item.id}', extra: item),
               layout: CatalogPreviewLayout.compact,
             ),
             const SizedBox(height: 28),

@@ -15,6 +15,8 @@ class CatalogFeedRepository {
 
   CatalogPageData? _cache;
   Future<CatalogPageData>? _pending;
+  CatalogFeed? _allFeedCache;
+  Future<CatalogFeed>? _allFeedPending;
 
   Future<CatalogPageData> loadPageData({bool forceRefresh = false}) {
     if (!forceRefresh && _cache != null) {
@@ -35,6 +37,30 @@ class CatalogFeedRepository {
           _pending = null;
         });
     return future;
+  }
+
+  Future<CatalogFeedItem?> loadItemById(
+    String id, {
+    bool forceRefresh = false,
+  }) async {
+    final normalizedId = id.trim();
+    if (normalizedId.isEmpty) {
+      return null;
+    }
+
+    final pageData = await loadPageData(forceRefresh: forceRefresh);
+    final fromPage = _findItemInPageData(pageData, normalizedId);
+    if (fromPage != null) {
+      return fromPage;
+    }
+
+    final allFeed = await _loadAllFeed(forceRefresh: forceRefresh);
+    for (final item in allFeed.items) {
+      if (item.id == normalizedId) {
+        return item;
+      }
+    }
+    return null;
   }
 
   static Uri _resolveBaseUri() {
@@ -79,6 +105,29 @@ class CatalogFeedRepository {
       shelves: shelves,
       sourceBaseUrl: _baseUri.toString(),
     );
+  }
+
+  Future<CatalogFeed> _loadAllFeed({bool forceRefresh = false}) {
+    if (!forceRefresh && _allFeedCache != null) {
+      return SynchronousFuture<CatalogFeed>(_allFeedCache!);
+    }
+    if (!forceRefresh && _allFeedPending != null) {
+      return _allFeedPending!;
+    }
+
+    final future = _getJson(
+      'curated/last-updated/all.json',
+    ).then(CatalogFeed.fromJson);
+    _allFeedPending = future;
+    future
+        .then((value) {
+          _allFeedCache = value;
+          _allFeedPending = null;
+        })
+        .catchError((_) {
+          _allFeedPending = null;
+        });
+    return future;
   }
 
   Future<CatalogFeed> _loadTagFeed(String slug) async {
@@ -129,6 +178,22 @@ class CatalogFeedRepository {
       return null;
     }
     return DateTime.tryParse(value);
+  }
+
+  static CatalogFeedItem? _findItemInPageData(CatalogPageData data, String id) {
+    for (final item in data.latestItems) {
+      if (item.id == id) {
+        return item;
+      }
+    }
+    for (final shelf in data.shelves) {
+      for (final item in shelf.items) {
+        if (item.id == id) {
+          return item;
+        }
+      }
+    }
+    return null;
   }
 }
 
@@ -216,6 +281,7 @@ class CatalogFeedItem {
     required this.id,
     required this.title,
     required this.tags,
+    required this.collections,
     required this.tierId,
     required this.requiresSubscription,
     required this.previewImageUrl,
@@ -240,6 +306,7 @@ class CatalogFeedItem {
       title: (json['title'] as String?) ?? 'Untitled',
       description: json['description'] as String?,
       tags: _parseStringList(json['tags']),
+      collections: _parseStringList(json['collections']),
       tierId: tier is Map<String, dynamic> ? tier['id'] as String? : null,
       requiresSubscription:
           tier is Map<String, dynamic> && tier['requiresSubscription'] == true,
@@ -260,6 +327,7 @@ class CatalogFeedItem {
   final String title;
   final String? description;
   final List<String> tags;
+  final List<String> collections;
   final String? tierId;
   final bool requiresSubscription;
   final String? previewImageUrl;
@@ -282,6 +350,10 @@ class CatalogFeedItem {
         return requiresSubscription ? 'Subscription' : 'Unlocked';
     }
   }
+
+  bool get hasPreviewVideo => previewVideoUrl?.trim().isNotEmpty == true;
+
+  bool get hasPreviewImage => previewImageUrl?.trim().isNotEmpty == true;
 
   static List<String> _parseStringList(Object? value) {
     if (value is! List) {

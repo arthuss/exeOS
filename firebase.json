@@ -2,6 +2,12 @@
   "hosting": {
     "target": "webapp",
     "source": ".",
+    "rewrites": [
+      {
+        "source": "**",
+        "destination": "/index.html"
+      }
+    ],
     "headers": [
       {
         "source": "/",
