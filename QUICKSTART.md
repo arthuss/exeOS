@@ -26,6 +26,11 @@ flutter run -d web-server --web-hostname 127.0.0.1 --web-port 4111
 Dann im Browser:
 - `http://127.0.0.1:4111`
 
+Aktuelle Startlogik:
+- `/` oeffnet direkt den Vollkatalog
+- Datenquelle fuer den Browser-Grid ist `web\feeds\catalog\all.json`
+- Detailseiten bleiben unter `/catalog/:wallpaperId`
+
 ## Firebase Hosting
 
 Projekt:

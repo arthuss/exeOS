@@ -73,7 +73,7 @@ class CatalogFeedRepository {
 
   Future<CatalogPageData> _load() async {
     final curatedMeta = await _getJson('curated.json');
-    final latestFeed = await _getJson('curated/last-updated/premium.json');
+    final allFeed = await _loadAllFeed();
     final tagsMeta = await _getJson('tags.json');
 
     final tags = _parseTags(tagsMeta['tags']);
@@ -100,7 +100,8 @@ class CatalogFeedRepository {
 
     return CatalogPageData(
       generatedAt: _parseDateTime(curatedMeta['generatedAt']),
-      latestItems: CatalogFeed.fromJson(latestFeed).items,
+      latestItems: allFeed.items,
+      allItems: allFeed.items,
       featuredTags: featuredTags,
       shelves: shelves,
       sourceBaseUrl: _baseUri.toString(),
@@ -115,9 +116,7 @@ class CatalogFeedRepository {
       return _allFeedPending!;
     }
 
-    final future = _getJson(
-      'curated/last-updated/all.json',
-    ).then(CatalogFeed.fromJson);
+    final future = _getCatalogJson().then(CatalogFeed.fromJson);
     _allFeedPending = future;
     future
         .then((value) {
@@ -128,6 +127,14 @@ class CatalogFeedRepository {
           _allFeedPending = null;
         });
     return future;
+  }
+
+  Future<Map<String, dynamic>> _getCatalogJson() async {
+    try {
+      return await _getJson('catalog/all.json');
+    } on CatalogFeedException {
+      return _getJson('curated/last-updated/all.json');
+    }
   }
 
   Future<CatalogFeed> _loadTagFeed(String slug) async {
@@ -181,6 +188,11 @@ class CatalogFeedRepository {
   }
 
   static CatalogFeedItem? _findItemInPageData(CatalogPageData data, String id) {
+    for (final item in data.allItems) {
+      if (item.id == id) {
+        return item;
+      }
+    }
     for (final item in data.latestItems) {
       if (item.id == id) {
         return item;
@@ -200,6 +212,7 @@ class CatalogFeedRepository {
 class CatalogPageData {
   const CatalogPageData({
     required this.latestItems,
+    required this.allItems,
     required this.featuredTags,
     required this.shelves,
     required this.sourceBaseUrl,
@@ -208,6 +221,7 @@ class CatalogPageData {
 
   final DateTime? generatedAt;
   final List<CatalogFeedItem> latestItems;
+  final List<CatalogFeedItem> allItems;
   final List<CatalogTagSummary> featuredTags;
   final List<CatalogShelf> shelves;
   final String sourceBaseUrl;

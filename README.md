@@ -8,7 +8,7 @@ Phase A focuses on a productized shell:
 
 - branded app structure
 - router-based navigation
-- catalog-first landing surface
+- full-catalog landing surface backed by static hub feeds
 - settings and theme handling
 - web hosting target via Firebase Hosting
 
@@ -17,6 +17,7 @@ Firebase auth, favorites, entitlements, and payments are intentionally out of sc
 ## Local development
 
 ```bash
+pwsh -ExecutionPolicy Bypass -File .\scripts\sync-hub-feeds.ps1
 flutter pub get
 flutter run -d chrome
 ```
@@ -24,8 +25,8 @@ flutter run -d chrome
 ## Near-term roadmap
 
 1. Google sign-in on web
-2. Preview/detail flow on top of the read-only feed catalog
-3. Firebase Hosting rollout on the `dotexe-pro` site
+2. Inline video preview on top of the feed-backed detail flow
+3. Favorites, entitlements, and account linking on top of the read-only catalog
 
 ## Firebase Hosting
 

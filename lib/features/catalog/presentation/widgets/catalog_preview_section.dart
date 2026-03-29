@@ -461,7 +461,7 @@ class _WallpaperGrid extends StatelessWidget {
             for (final item in items)
               SizedBox(
                 width: width,
-                child: _WallpaperCard(item: item, onTap: onItemTap),
+                child: CatalogWallpaperCard(item: item, onTap: onItemTap),
               ),
           ],
         );
@@ -470,8 +470,8 @@ class _WallpaperGrid extends StatelessWidget {
   }
 }
 
-class _WallpaperCard extends StatelessWidget {
-  const _WallpaperCard({required this.item, this.onTap});
+class CatalogWallpaperCard extends StatelessWidget {
+  const CatalogWallpaperCard({required this.item, this.onTap, super.key});
 
   final CatalogFeedItem item;
   final ValueChanged<CatalogFeedItem>? onTap;
