@@ -192,6 +192,8 @@ class _PreviewSurface extends StatelessWidget {
                         : Image.network(
                             item.previewImageUrl!,
                             fit: BoxFit.cover,
+                            webHtmlElementStrategy:
+                                WebHtmlElementStrategy.prefer,
                             errorBuilder: (_, __, ___) =>
                                 const _DetailFallback(),
                             loadingBuilder: (context, child, progress) =>

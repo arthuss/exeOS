@@ -398,6 +398,7 @@ class _TagChip extends StatelessWidget {
                     width: 40,
                     height: 58,
                     fit: BoxFit.cover,
+                    webHtmlElementStrategy: WebHtmlElementStrategy.prefer,
                     errorBuilder: (_, __, ___) => Container(
                       width: 40,
                       height: 58,
@@ -516,6 +517,7 @@ class _WallpaperCard extends StatelessWidget {
                       : Image.network(
                           item.previewImageUrl!,
                           fit: BoxFit.cover,
+                          webHtmlElementStrategy: WebHtmlElementStrategy.prefer,
                           errorBuilder: (_, __, ___) => _FallbackPreview(),
                           loadingBuilder: (context, child, progress) =>
                               progress == null ? child : _FallbackPreview(),
