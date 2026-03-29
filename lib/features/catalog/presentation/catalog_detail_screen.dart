@@ -8,40 +8,45 @@ import 'widgets/catalog_preview_section.dart';
 class CatalogDetailScreen extends StatelessWidget {
   const CatalogDetailScreen({
     super.key,
-    required this.wallpaperId,
+    required this.wallpaperRef,
     this.initialItem,
   });
 
-  final String wallpaperId;
+  final String wallpaperRef;
   final CatalogFeedItem? initialItem;
 
   @override
   Widget build(BuildContext context) {
     final future = initialItem != null
         ? SynchronousFuture<CatalogFeedItem?>(initialItem)
-        : catalogFeedRepository.loadItemById(wallpaperId);
+        : catalogFeedRepository.loadItemByRef(wallpaperRef);
 
-    return Scaffold(
-      appBar: AppBar(title: const Text('Preview detail')),
-      body: FutureBuilder<CatalogFeedItem?>(
-        future: future,
-        builder: (context, snapshot) {
-          if (snapshot.connectionState != ConnectionState.done) {
-            return const Center(child: CircularProgressIndicator());
-          }
+    return FutureBuilder<CatalogFeedItem?>(
+      future: future,
+      builder: (context, snapshot) {
+        if (snapshot.connectionState != ConnectionState.done) {
+          return const Scaffold(
+            body: Center(child: CircularProgressIndicator()),
+          );
+        }
 
-          final item = snapshot.data;
-          if (item == null) {
-            return _DetailState(
+        final item = snapshot.data;
+        if (item == null) {
+          return Scaffold(
+            appBar: AppBar(title: const Text('Wallpaper')),
+            body: _DetailState(
               title: 'Wallpaper nicht gefunden',
               body:
-                  'Fuer $wallpaperId wurde im aktuellen Feed-Snapshot kein Eintrag gefunden. Wenn der Katalog gerade umgebaut wurde, zuerst die Feed-Snapshots neu synchronisieren und erneut deployen.',
-            );
-          }
+                  'Fuer $wallpaperRef wurde im aktuellen Feed-Snapshot kein Eintrag gefunden. Wenn der Katalog gerade umgebaut wurde, zuerst die Feed-Snapshots neu synchronisieren und erneut deployen.',
+            ),
+          );
+        }
 
-          return _DetailBody(item: item);
-        },
-      ),
+        return Scaffold(
+          appBar: AppBar(title: Text(item.displayTitle)),
+          body: _DetailBody(item: item),
+        );
+      },
     );
   }
 }
@@ -88,15 +93,26 @@ class _DetailBody extends StatelessWidget {
         ),
         const SizedBox(height: 20),
         Text(
-          item.title,
+          item.displayTitle,
           style: theme.textTheme.displaySmall?.copyWith(
             fontWeight: FontWeight.w800,
           ),
         ),
+        if (item.visualHook?.trim().isNotEmpty == true) ...[
+          const SizedBox(height: 12),
+          Text(
+            item.visualHook!,
+            style: theme.textTheme.titleMedium?.copyWith(
+              color: CatalogPreviewSection.accentColor,
+              fontWeight: FontWeight.w600,
+              height: 1.4,
+            ),
+          ),
+        ],
         const SizedBox(height: 12),
         Text(
-          item.description?.trim().isNotEmpty == true
-              ? item.description!
+          item.displayDescription?.trim().isNotEmpty == true
+              ? item.displayDescription!
               : 'Read-only Preview aus dem Live-Katalog. Die Vorschau verlinkt direkt auf die exportierten Hub-Medien.',
           style: theme.textTheme.bodyLarge?.copyWith(
             color: theme.colorScheme.onSurfaceVariant,
@@ -315,12 +331,16 @@ class _MetadataPanel extends StatelessWidget {
             ),
             const SizedBox(height: 16),
             _MetaRow(label: 'Wallpaper ID', value: item.id),
+            if (item.marketing?.slug?.trim().isNotEmpty == true)
+              _MetaRow(label: 'Canonical ref', value: item.canonicalRef),
             _MetaRow(label: 'Tier', value: item.tierLabel),
             _MetaRow(label: 'Updated', value: _formatUpdated(item.updatedAt)),
             _MetaRow(
               label: 'Preview assets',
               value: item.hasPreviewVideo ? 'image + video' : 'image only',
             ),
+            if (item.marketing?.ctaMode?.trim().isNotEmpty == true)
+              _MetaRow(label: 'CTA mode', value: item.marketing!.ctaMode!),
             if (collections.isNotEmpty) ...[
               const SizedBox(height: 18),
               Text(

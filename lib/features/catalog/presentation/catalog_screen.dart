@@ -277,7 +277,7 @@ class _CatalogBrowser extends StatelessWidget {
                 return CatalogWallpaperCard(
                   item: item,
                   onTap: (selectedItem) =>
-                      context.push('/catalog/${selectedItem.id}', extra: selectedItem),
+                      context.push('/w/${selectedItem.canonicalRef}', extra: selectedItem),
                 );
               }, childCount: filteredItems.length),
               gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(

@@ -9,6 +9,7 @@ Phase A focuses on a productized shell:
 - branded app structure
 - router-based navigation
 - full-catalog landing surface backed by static hub feeds
+- canonical wallpaper landing routes under `/w/:wallpaperRef`
 - settings and theme handling
 - web hosting target via Firebase Hosting
 
@@ -27,6 +28,11 @@ flutter run -d chrome
 1. Google sign-in on web
 2. Inline video preview on top of the feed-backed detail flow
 3. Favorites, entitlements, and account linking on top of the read-only catalog
+
+## Public link shape
+
+- canonical public wallpaper URLs live under `/w/:wallpaperRef`
+- legacy `/catalog/:wallpaperId` links redirect into `/w/...`
 
 ## Firebase Hosting
 

@@ -39,24 +39,24 @@ class CatalogFeedRepository {
     return future;
   }
 
-  Future<CatalogFeedItem?> loadItemById(
-    String id, {
+  Future<CatalogFeedItem?> loadItemByRef(
+    String ref, {
     bool forceRefresh = false,
   }) async {
-    final normalizedId = id.trim();
-    if (normalizedId.isEmpty) {
+    final normalizedRef = ref.trim();
+    if (normalizedRef.isEmpty) {
       return null;
     }
 
     final pageData = await loadPageData(forceRefresh: forceRefresh);
-    final fromPage = _findItemInPageData(pageData, normalizedId);
+    final fromPage = _findItemInPageData(pageData, normalizedRef);
     if (fromPage != null) {
       return fromPage;
     }
 
     final allFeed = await _loadAllFeed(forceRefresh: forceRefresh);
     for (final item in allFeed.items) {
-      if (item.id == normalizedId) {
+      if (item.matchesRef(normalizedRef)) {
         return item;
       }
     }
@@ -187,20 +187,23 @@ class CatalogFeedRepository {
     return DateTime.tryParse(value);
   }
 
-  static CatalogFeedItem? _findItemInPageData(CatalogPageData data, String id) {
+  static CatalogFeedItem? _findItemInPageData(
+    CatalogPageData data,
+    String ref,
+  ) {
     for (final item in data.allItems) {
-      if (item.id == id) {
+      if (item.matchesRef(ref)) {
         return item;
       }
     }
     for (final item in data.latestItems) {
-      if (item.id == id) {
+      if (item.matchesRef(ref)) {
         return item;
       }
     }
     for (final shelf in data.shelves) {
       for (final item in shelf.items) {
-        if (item.id == id) {
+        if (item.matchesRef(ref)) {
           return item;
         }
       }
@@ -294,6 +297,7 @@ class CatalogFeedItem {
   const CatalogFeedItem({
     required this.id,
     required this.title,
+    required this.marketing,
     required this.tags,
     required this.collections,
     required this.tierId,
@@ -307,6 +311,7 @@ class CatalogFeedItem {
   factory CatalogFeedItem.fromJson(Map<String, dynamic> json) {
     final tier = json['tier'];
     final media = json['media'];
+    final marketing = json['marketing'];
     final preview = media is Map<String, dynamic> ? media['preview'] : null;
     final previewImage = preview is Map<String, dynamic>
         ? preview['image']
@@ -319,6 +324,9 @@ class CatalogFeedItem {
       id: (json['id'] as String?) ?? '',
       title: (json['title'] as String?) ?? 'Untitled',
       description: json['description'] as String?,
+      marketing: marketing is Map<String, dynamic>
+          ? CatalogMarketing.fromJson(marketing)
+          : null,
       tags: _parseStringList(json['tags']),
       collections: _parseStringList(json['collections']),
       tierId: tier is Map<String, dynamic> ? tier['id'] as String? : null,
@@ -340,6 +348,7 @@ class CatalogFeedItem {
   final String id;
   final String title;
   final String? description;
+  final CatalogMarketing? marketing;
   final List<String> tags;
   final List<String> collections;
   final String? tierId;
@@ -347,6 +356,20 @@ class CatalogFeedItem {
   final String? previewImageUrl;
   final String? previewVideoUrl;
   final DateTime updatedAt;
+
+  String get displayTitle => marketing?.title?.trim().isNotEmpty == true
+      ? marketing!.title!
+      : title;
+
+  String? get displayDescription =>
+      marketing?.description?.trim().isNotEmpty == true
+      ? marketing!.description
+      : description;
+
+  String? get visualHook => marketing?.visualHook;
+
+  String get canonicalRef =>
+      marketing?.slug?.trim().isNotEmpty == true ? marketing!.slug! : id;
 
   String get tierLabel {
     switch (tierId?.toLowerCase()) {
@@ -369,12 +392,56 @@ class CatalogFeedItem {
 
   bool get hasPreviewImage => previewImageUrl?.trim().isNotEmpty == true;
 
+  bool matchesRef(String rawRef) {
+    final ref = rawRef.trim();
+    if (ref.isEmpty) {
+      return false;
+    }
+    if (ref == id || ref == canonicalRef) {
+      return true;
+    }
+    final productMatch = RegExp(r'(product\d+)$', caseSensitive: false).firstMatch(ref);
+    if (productMatch != null) {
+      return productMatch.group(1)?.toLowerCase() == id.toLowerCase();
+    }
+    return false;
+  }
+
   static List<String> _parseStringList(Object? value) {
     if (value is! List) {
       return const <String>[];
     }
     return value.whereType<String>().toList(growable: false);
   }
+}
+
+class CatalogMarketing {
+  const CatalogMarketing({
+    this.slug,
+    this.title,
+    this.description,
+    this.visualHook,
+    this.searchKeywords = const <String>[],
+    this.ctaMode,
+  });
+
+  factory CatalogMarketing.fromJson(Map<String, dynamic> json) {
+    return CatalogMarketing(
+      slug: json['slug'] as String?,
+      title: json['title'] as String?,
+      description: json['description'] as String?,
+      visualHook: json['visualHook'] as String?,
+      searchKeywords: CatalogFeedItem._parseStringList(json['searchKeywords']),
+      ctaMode: json['ctaMode'] as String?,
+    );
+  }
+
+  final String? slug;
+  final String? title;
+  final String? description;
+  final String? visualHook;
+  final List<String> searchKeywords;
+  final String? ctaMode;
 }
 
 class CatalogFeedException implements Exception {

@@ -29,7 +29,8 @@ Dann im Browser:
 Aktuelle Startlogik:
 - `/` oeffnet direkt den Vollkatalog
 - Datenquelle fuer den Browser-Grid ist `web\feeds\catalog\all.json`
-- Detailseiten bleiben unter `/catalog/:wallpaperId`
+- kanonische Detailseiten liegen unter `/w/:wallpaperRef`
+- alte `/catalog/:wallpaperId`-Links werden dorthin umgeleitet
 
 ## Firebase Hosting
 

@@ -19,13 +19,18 @@ final GoRouter appRouter = GoRouter(
     ),
     GoRoute(
       path: '/catalog/:wallpaperId',
+      redirect: (BuildContext context, GoRouterState state) =>
+          '/w/${state.pathParameters['wallpaperId'] ?? ''}',
+    ),
+    GoRoute(
+      path: '/w/:wallpaperRef',
       pageBuilder: (BuildContext context, GoRouterState state) {
         final initialItem = state.extra is CatalogFeedItem
             ? state.extra as CatalogFeedItem
             : null;
         return NoTransitionPage(
           child: CatalogDetailScreen(
-            wallpaperId: state.pathParameters['wallpaperId'] ?? '',
+            wallpaperRef: state.pathParameters['wallpaperRef'] ?? '',
             initialItem: initialItem,
           ),
         );
