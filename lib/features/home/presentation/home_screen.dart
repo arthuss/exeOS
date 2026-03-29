@@ -69,10 +69,11 @@ class HomeScreen extends StatelessWidget {
             CatalogPreviewSection(
               title: 'Preview catalog',
               description:
-                  'The catalog belongs directly on the landing surface. These cards are visual shell placeholders so we can tune spacing, hierarchy, and preview density before wiring in the real feed.',
+                  'Der Katalog sitzt direkt auf der Startflaeche und zieht seine Vorschau jetzt aus den exportierten Hub-Feeds. Die Weboberflaeche bleibt zunaechst read-only und image-first.',
               includeSurface: true,
               showBrowseAction: true,
               onBrowseTap: () => context.go('/catalog'),
+              layout: CatalogPreviewLayout.compact,
             ),
             const SizedBox(height: 28),
             const _FeatureCard(
@@ -92,7 +93,7 @@ class HomeScreen extends StatelessWidget {
             const _FeatureCard(
               title: 'Catalog-first rollout',
               body:
-                  'Authentication, entitlements, payments, and account linking come after the catalog and preview flows are in place.',
+                  'Der oeffentliche Read-only-Katalog ist jetzt feed-gebunden. Authentifizierung, Entitlements, Zahlungen und Account-Linking folgen danach.',
               icon: Icons.auto_awesome_mosaic_rounded,
             ),
           ],
@@ -156,4 +157,3 @@ class _FeatureCard extends StatelessWidget {
     );
   }
 }
-

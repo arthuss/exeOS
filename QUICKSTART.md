@@ -10,6 +10,7 @@ $env:Path = 'C:\tools\flutter\bin;' + $env:Path
 flutter pub get
 flutter analyze
 flutter test
+pwsh -ExecutionPolicy Bypass -File .\scripts\sync-hub-feeds.ps1
 flutter run -d chrome
 ```
 
@@ -18,6 +19,7 @@ flutter run -d chrome
 ```powershell
 cd G:\workspaces\AndroidStudioProjects\exeOS
 $env:Path = 'C:\tools\flutter\bin;' + $env:Path
+pwsh -ExecutionPolicy Bypass -File .\scripts\sync-hub-feeds.ps1
 flutter run -d web-server --web-hostname 127.0.0.1 --web-port 4111
 ```
 
@@ -46,6 +48,7 @@ Deploy:
 ```powershell
 cd G:\workspaces\AndroidStudioProjects\exeOS
 $env:Path = 'C:\tools\flutter\bin;' + $env:Path
+pwsh -ExecutionPolicy Bypass -File .\scripts\sync-hub-feeds.ps1
 firebase deploy --only hosting:webapp --project wallpaper-management-hub
 ```
 

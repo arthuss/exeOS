@@ -7,18 +7,17 @@ class CatalogScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Scaffold(
-        appBar: AppBar(
-          title: const Text('Catalog'),
+    appBar: AppBar(title: const Text('Catalog')),
+    body: ListView(
+      padding: EdgeInsets.fromLTRB(24, 24, 24, 32),
+      children: const [
+        CatalogPreviewSection(
+          title: 'Wallpaper catalog',
+          description:
+              'Read-only Feed aus dem Hub. Die Vorschaukarten kommen jetzt direkt aus den exportierten Produkt-Feeds und bleiben bewusst bildzentriert.',
+          layout: CatalogPreviewLayout.full,
         ),
-        body: ListView(
-          padding: EdgeInsets.fromLTRB(24, 24, 24, 32),
-          children: const [
-            CatalogPreviewSection(
-              title: 'Wallpaper catalog',
-              description:
-                  'Phase A keeps the web catalog read-only and image-first. Real feed-backed preview images replace these placeholders in the next integration step.',
-            ),
-          ],
-        ),
-      );
+      ],
+    ),
+  );
 }

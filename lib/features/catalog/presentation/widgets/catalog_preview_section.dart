@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
 
+import '../../data/catalog_feed_repository.dart';
+
+enum CatalogPreviewLayout { compact, full }
+
 class CatalogPreviewSection extends StatelessWidget {
   const CatalogPreviewSection({
     super.key,
@@ -8,6 +12,7 @@ class CatalogPreviewSection extends StatelessWidget {
     this.includeSurface = false,
     this.showBrowseAction = false,
     this.onBrowseTap,
+    this.layout = CatalogPreviewLayout.full,
   });
 
   final String title;
@@ -15,482 +20,401 @@ class CatalogPreviewSection extends StatelessWidget {
   final bool includeSurface;
   final bool showBrowseAction;
   final VoidCallback? onBrowseTap;
+  final CatalogPreviewLayout layout;
 
-  static const Color _surfaceBase = Color(0xFF0A0F18);
-  static const Color _surfaceCard = Color(0xFF121A28);
-  static const Color _outlineSoft = Color(0xFF283348);
-  static const Color _textPrimary = Color(0xFFF3F6FF);
-  static const Color _textSecondary = Color(0xFFA8B3CB);
-  static const Color _tierFree = Color(0xFF34B886);
-  static const Color _tierGold = Color(0xFFBA9040);
-  static const Color _tierAmethyst = Color(0xFF7D69D8);
-
-  static const List<_FilterChipModel> _filters = <_FilterChipModel>[
-    _FilterChipModel(
-      id: 'all',
-      iconAsset: 'assets/catalog/badges/badge_video.png',
-      label: 'Alle',
-    ),
-    _FilterChipModel(
-      id: 'free',
-      iconAsset: 'assets/catalog/badges/tier_badge_free.png',
-      label: 'Kostenlos',
-    ),
-    _FilterChipModel(
-      id: 'gold',
-      iconAsset: 'assets/catalog/badges/tier_badge_gold.png',
-      label: 'Gold',
-    ),
-    _FilterChipModel(
-      id: 'amethyst',
-      iconAsset: 'assets/catalog/badges/tier_badge_amethyst.png',
-      label: 'Amethyst',
-    ),
-    _FilterChipModel(
-      id: 'owned',
-      iconAsset: 'assets/catalog/badges/badge_gift_ready.png',
-      label: 'Owned',
-    ),
-    _FilterChipModel(
-      id: 'favorites',
-      iconAsset: 'assets/catalog/badges/badge_favorites.png',
-      label: 'Favoriten',
-    ),
-  ];
-
-  static const List<_CatalogGroup> _groups = <_CatalogGroup>[
-    _CatalogGroup(
-      title: 'ANATOMY',
-      ctaLabel: 'Mehr aus ANATOMY',
-      items: <_PreviewItem>[
-        _PreviewItem(
-          title: 'Orbit Fold',
-          tierLabel: 'Gold',
-          tierIconAsset: 'assets/catalog/badges/tier_badge_gold.png',
-          tierColor: _tierGold,
-          glowColor: Color(0xFF5D9DFF),
-          previewGradient: <Color>[
-            Color(0xFF081527),
-            Color(0xFF0D223D),
-            Color(0xFF102E59),
-          ],
-          motif: _PreviewMotif.rings,
-        ),
-        _PreviewItem(
-          title: 'Quiet Mammal',
-          tierLabel: 'Gold',
-          tierIconAsset: 'assets/catalog/badges/tier_badge_gold.png',
-          tierColor: _tierGold,
-          glowColor: Color(0xFF87C9FF),
-          previewGradient: <Color>[
-            Color(0xFF1A120E),
-            Color(0xFF4F3623),
-            Color(0xFF8C6643),
-          ],
-          motif: _PreviewMotif.orb,
-        ),
-        _PreviewItem(
-          title: 'Drift Voyage',
-          tierLabel: 'Gold',
-          tierIconAsset: 'assets/catalog/badges/tier_badge_gold.png',
-          tierColor: _tierGold,
-          glowColor: Color(0xFF8FC8FF),
-          previewGradient: <Color>[
-            Color(0xFF142033),
-            Color(0xFF1E3E66),
-            Color(0xFF4D7FB9),
-          ],
-          motif: _PreviewMotif.sails,
-          favorite: true,
-        ),
-      ],
-    ),
-    _CatalogGroup(
-      title: 'ANIMALS',
-      ctaLabel: 'Mehr aus ANIMALS',
-      items: <_PreviewItem>[
-        _PreviewItem(
-          title: 'Signal Bloom',
-          tierLabel: 'Amethyst',
-          tierIconAsset: 'assets/catalog/badges/tier_badge_amethyst.png',
-          tierColor: _tierAmethyst,
-          glowColor: Color(0xFF54D1FF),
-          previewGradient: <Color>[
-            Color(0xFF140F26),
-            Color(0xFF472061),
-            Color(0xFF0E6BA8),
-          ],
-          motif: _PreviewMotif.portrait,
-        ),
-        _PreviewItem(
-          title: 'Night Walker',
-          tierLabel: 'Amethyst',
-          tierIconAsset: 'assets/catalog/badges/tier_badge_amethyst.png',
-          tierColor: _tierAmethyst,
-          glowColor: Color(0xFF43BDFF),
-          previewGradient: <Color>[
-            Color(0xFF0E1525),
-            Color(0xFF22365C),
-            Color(0xFF0B8DD8),
-          ],
-          motif: _PreviewMotif.portrait,
-        ),
-        _PreviewItem(
-          title: 'Jelly Current',
-          tierLabel: 'Free',
-          tierIconAsset: 'assets/catalog/badges/tier_badge_free.png',
-          tierColor: _tierFree,
-          glowColor: Color(0xFFA1E5FF),
-          previewGradient: <Color>[
-            Color(0xFF0A1622),
-            Color(0xFF22455B),
-            Color(0xFF9FD7F3),
-          ],
-          motif: _PreviewMotif.jelly,
-          favorite: true,
-        ),
-      ],
-    ),
-  ];
+  static const Color _base = Color(0xFF0A0F18);
+  static const Color _card = Color(0xFF121A28);
+  static const Color _cardRaised = Color(0xFF172133);
+  static const Color _outline = Color(0xFF283348);
+  static const Color _text = Color(0xFFF3F6FF);
+  static const Color _muted = Color(0xFFA8B3CB);
+  static const Color _accent = Color(0xFF63D5FF);
 
   @override
   Widget build(BuildContext context) {
-    final section = Column(
+    return FutureBuilder<CatalogPageData>(
+      future: catalogFeedRepository.loadPageData(),
+      builder: (context, snapshot) {
+        final child = switch (snapshot.connectionState) {
+          ConnectionState.done when snapshot.hasData => _CatalogBody(
+            title: title,
+            description: description,
+            showBrowseAction: showBrowseAction,
+            onBrowseTap: onBrowseTap,
+            layout: layout,
+            data: snapshot.data!,
+          ),
+          ConnectionState.done => _StateCard(
+            title: title,
+            description: description,
+            headline: 'Feed nicht bereit',
+            body:
+                snapshot.error?.toString() ??
+                'Feed-Daten konnten nicht geladen werden.',
+            accent:
+                r'Vor lokalem Web-Start: powershell -ExecutionPolicy Bypass -File .\scripts\sync-hub-feeds.ps1',
+          ),
+          _ => _StateCard(
+            title: title,
+            description: description,
+            headline: 'Feed wird geladen',
+            body:
+                'Die Read-only-Produktvorschau wird aus den exportierten Hub-Feeds aufgebaut.',
+            loading: true,
+          ),
+        };
+
+        if (!includeSurface) {
+          return child;
+        }
+
+        return DecoratedBox(
+          decoration: BoxDecoration(
+            color: _base,
+            borderRadius: BorderRadius.circular(30),
+            border: Border.all(color: _outline),
+          ),
+          child: Padding(padding: const EdgeInsets.all(20), child: child),
+        );
+      },
+    );
+  }
+}
+
+class _CatalogBody extends StatelessWidget {
+  const _CatalogBody({
+    required this.title,
+    required this.description,
+    required this.showBrowseAction,
+    required this.onBrowseTap,
+    required this.layout,
+    required this.data,
+  });
+
+  final String title;
+  final String? description;
+  final bool showBrowseAction;
+  final VoidCallback? onBrowseTap;
+  final CatalogPreviewLayout layout;
+  final CatalogPageData data;
+
+  int get _latestLimit => layout == CatalogPreviewLayout.compact ? 6 : 12;
+  int get _shelfLimit => layout == CatalogPreviewLayout.compact ? 3 : 4;
+  int get _itemsPerShelf => layout == CatalogPreviewLayout.compact ? 4 : 6;
+  int get _tagLimit => layout == CatalogPreviewLayout.compact ? 6 : 10;
+
+  @override
+  Widget build(BuildContext context) {
+    final latestItems = data.latestItems
+        .take(_latestLimit)
+        .toList(growable: false);
+    final featuredTags = data.featuredTags
+        .take(_tagLimit)
+        .toList(growable: false);
+    final shelves = data.shelves
+        .take(_shelfLimit)
+        .map((shelf) {
+          return CatalogShelf(
+            id: shelf.id,
+            title: shelf.title,
+            subtitle: shelf.subtitle,
+            items: shelf.items.take(_itemsPerShelf).toList(growable: false),
+          );
+        })
+        .toList(growable: false);
+    final generatedAt = data.generatedAt;
+    final generatedLabel = generatedAt == null
+        ? 'unbekannt'
+        : '${generatedAt.day.toString().padLeft(2, '0')}.${generatedAt.month.toString().padLeft(2, '0')}.${generatedAt.year} ${generatedAt.hour.toString().padLeft(2, '0')}:${generatedAt.minute.toString().padLeft(2, '0')}';
+
+    return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
           title,
           style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                color: _textPrimary,
-                fontWeight: FontWeight.w800,
-              ),
+            color: CatalogPreviewSection._text,
+            fontWeight: FontWeight.w800,
+          ),
         ),
         if (description != null) ...[
           const SizedBox(height: 10),
           Text(
             description!,
             style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                  color: _textSecondary,
-                  height: 1.45,
-                ),
+              color: CatalogPreviewSection._muted,
+              height: 1.45,
+            ),
           ),
         ],
         const SizedBox(height: 18),
-        _SearchSurface(),
-        const SizedBox(height: 18),
-        Text(
-          'Freigeschaltete Inhalte',
-          style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                color: _textSecondary,
-                fontWeight: FontWeight.w600,
-              ),
+        Wrap(
+          spacing: 12,
+          runSpacing: 12,
+          children: [
+            _Pill(
+              icon: Icons.cloud_done_rounded,
+              label: 'Hub feed snapshot',
+              color: CatalogPreviewSection._accent,
+            ),
+            _Pill(
+              icon: Icons.schedule_rounded,
+              label: 'Stand $generatedLabel',
+              color: CatalogPreviewSection._muted,
+            ),
+            _Pill(
+              icon: Icons.photo_library_rounded,
+              label: '${latestItems.length} Preview-Karten',
+              color: CatalogPreviewSection._muted,
+            ),
+          ],
         ),
-        const SizedBox(height: 12),
-        _FilterRail(filters: _filters),
-        const SizedBox(height: 24),
-        for (final _CatalogGroup group in _groups) ...[
-          _CatalogGroupBlock(
-            group: group,
+        if (featuredTags.isNotEmpty) ...[
+          const SizedBox(height: 22),
+          Text(
+            'Top Tags',
+            style: Theme.of(context).textTheme.titleMedium?.copyWith(
+              color: CatalogPreviewSection._muted,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+          const SizedBox(height: 12),
+          SizedBox(
+            height: 78,
+            child: ListView.separated(
+              scrollDirection: Axis.horizontal,
+              itemBuilder: (context, index) =>
+                  _TagChip(tag: featuredTags[index]),
+              separatorBuilder: (_, __) => const SizedBox(width: 10),
+              itemCount: featuredTags.length,
+            ),
+          ),
+        ],
+        const SizedBox(height: 26),
+        _SectionHeader(
+          title: 'Neu im Feed',
+          subtitle: '${latestItems.length} aktuelle Produktkarten',
+          showBrowseAction: showBrowseAction,
+          onBrowseTap: onBrowseTap,
+        ),
+        const SizedBox(height: 14),
+        _WallpaperGrid(items: latestItems),
+        for (final shelf in shelves) ...[
+          const SizedBox(height: 28),
+          _SectionHeader(
+            title: shelf.title.replaceAll('_', ' ').toUpperCase(),
+            subtitle: shelf.subtitle,
             showBrowseAction: showBrowseAction,
             onBrowseTap: onBrowseTap,
           ),
-          const SizedBox(height: 28),
+          const SizedBox(height: 14),
+          _WallpaperGrid(items: shelf.items),
         ],
       ],
     );
-
-    if (!includeSurface) {
-      return section;
-    }
-
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        color: _surfaceBase,
-        borderRadius: BorderRadius.circular(30),
-        border: Border.all(color: _outlineSoft),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.all(20),
-        child: section,
-      ),
-    );
   }
 }
 
-class _SearchSurface extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      height: 64,
-      padding: const EdgeInsets.symmetric(horizontal: 18),
-      decoration: BoxDecoration(
-        color: CatalogPreviewSection._surfaceBase,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: CatalogPreviewSection._outlineSoft),
-      ),
-      child: Row(
-        children: [
-          const Icon(Icons.search_rounded,
-              color: CatalogPreviewSection._textSecondary),
-          const SizedBox(width: 12),
-          Text(
-            'Hintergrundbild suchen',
-            style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                  color: CatalogPreviewSection._textSecondary,
-                ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _FilterRail extends StatelessWidget {
-  const _FilterRail({required this.filters});
-
-  final List<_FilterChipModel> filters;
-
-  @override
-  Widget build(BuildContext context) {
-    return SingleChildScrollView(
-      scrollDirection: Axis.horizontal,
-      child: Row(
-        children: [
-          for (int i = 0; i < filters.length; i++) ...[
-            _FilterButton(
-              filter: filters[i],
-              selected: i == 0,
-            ),
-            if (i != filters.length - 1) const SizedBox(width: 10),
-          ],
-        ],
-      ),
-    );
-  }
-}
-
-class _FilterButton extends StatelessWidget {
-  const _FilterButton({
-    required this.filter,
-    required this.selected,
+class _StateCard extends StatelessWidget {
+  const _StateCard({
+    required this.title,
+    required this.description,
+    required this.headline,
+    required this.body,
+    this.accent,
+    this.loading = false,
   });
 
-  final _FilterChipModel filter;
-  final bool selected;
-
-  @override
-  Widget build(BuildContext context) {
-    return Tooltip(
-      message: filter.label,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 180),
-        width: 62,
-        height: 62,
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(18),
-          gradient: selected
-              ? const RadialGradient(
-                  center: Alignment.topLeft,
-                  radius: 1.25,
-                  colors: <Color>[
-                    Color(0xFFF6F9FF),
-                    Color(0x80FFFFFF),
-                    Color(0x10FFFFFF),
-                  ],
-                )
-              : null,
-          color: selected ? null : Colors.transparent,
-          border: Border.all(
-            color: selected ? Colors.white : Colors.white.withAlpha(50),
-            width: selected ? 2 : 1,
-          ),
-        ),
-        child: Padding(
-          padding: const EdgeInsets.all(10),
-          child: Image.asset(filter.iconAsset, fit: BoxFit.contain),
-        ),
-      ),
-    );
-  }
-}
-
-class _CatalogGroupBlock extends StatelessWidget {
-  const _CatalogGroupBlock({
-    required this.group,
-    required this.showBrowseAction,
-    this.onBrowseTap,
-  });
-
-  final _CatalogGroup group;
-  final bool showBrowseAction;
-  final VoidCallback? onBrowseTap;
+  final String title;
+  final String? description;
+  final String headline;
+  final String body;
+  final String? accent;
+  final bool loading;
 
   @override
   Widget build(BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Row(
-          children: [
-            Expanded(
-              child: Text(
-                group.title,
-                style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                      color: CatalogPreviewSection._textPrimary,
-                      fontWeight: FontWeight.w800,
-                      letterSpacing: 0.8,
-                    ),
-              ),
-            ),
-            if (showBrowseAction)
-              _SectionCta(
-                label: group.ctaLabel,
-                onTap: onBrowseTap,
-              ),
-          ],
+        Text(
+          title,
+          style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+            color: CatalogPreviewSection._text,
+            fontWeight: FontWeight.w800,
+          ),
         ),
-        const SizedBox(height: 14),
-        LayoutBuilder(
-          builder: (BuildContext context, BoxConstraints constraints) {
-            final double width = constraints.maxWidth;
-            int crossAxisCount = 2;
-            if (width >= 1280) {
-              crossAxisCount = 5;
-            } else if (width >= 980) {
-              crossAxisCount = 4;
-            } else if (width >= 760) {
-              crossAxisCount = 3;
-            }
-
-            return GridView.builder(
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              itemCount: group.items.length,
-              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: crossAxisCount,
-                crossAxisSpacing: 16,
-                mainAxisSpacing: 16,
-                childAspectRatio: 0.58,
+        if (description != null) ...[
+          const SizedBox(height: 10),
+          Text(
+            description!,
+            style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+              color: CatalogPreviewSection._muted,
+            ),
+          ),
+        ],
+        const SizedBox(height: 18),
+        Container(
+          padding: const EdgeInsets.all(18),
+          decoration: BoxDecoration(
+            color: CatalogPreviewSection._card,
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(color: CatalogPreviewSection._outline),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  if (loading)
+                    const SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    ),
+                  if (loading) const SizedBox(width: 12),
+                  Expanded(
+                    child: Text(
+                      headline,
+                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                        color: CatalogPreviewSection._text,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ),
+                ],
               ),
-              itemBuilder: (BuildContext context, int index) {
-                return _PreviewCard(item: group.items[index]);
-              },
-            );
-          },
+              const SizedBox(height: 10),
+              Text(
+                body,
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                  color: CatalogPreviewSection._muted,
+                ),
+              ),
+              if (accent != null) ...[
+                const SizedBox(height: 10),
+                Text(
+                  accent!,
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    color: CatalogPreviewSection._accent,
+                  ),
+                ),
+              ],
+            ],
+          ),
         ),
       ],
     );
   }
 }
 
-class _SectionCta extends StatelessWidget {
-  const _SectionCta({
-    required this.label,
-    this.onTap,
+class _SectionHeader extends StatelessWidget {
+  const _SectionHeader({
+    required this.title,
+    required this.subtitle,
+    required this.showBrowseAction,
+    required this.onBrowseTap,
   });
 
-  final String label;
-  final VoidCallback? onTap;
+  final String title;
+  final String subtitle;
+  final bool showBrowseAction;
+  final VoidCallback? onBrowseTap;
 
   @override
   Widget build(BuildContext context) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(999),
-      child: Ink(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-        decoration: BoxDecoration(
-          color: const Color(0xFF283B73),
-          borderRadius: BorderRadius.circular(999),
-          border: Border.all(color: const Color(0xFF4E67A7)),
-        ),
-        child: Text(
-          label,
-          style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                color: const Color(0xFF79A5FF),
-                fontWeight: FontWeight.w700,
+    return Row(
+      children: [
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                title,
+                style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                  color: CatalogPreviewSection._text,
+                ),
               ),
+              const SizedBox(height: 4),
+              Text(
+                subtitle,
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                  color: CatalogPreviewSection._muted,
+                ),
+              ),
+            ],
+          ),
         ),
-      ),
+        if (showBrowseAction)
+          TextButton.icon(
+            onPressed: onBrowseTap,
+            icon: const Icon(Icons.arrow_forward_rounded),
+            label: const Text('Katalog'),
+          ),
+      ],
     );
   }
 }
 
-class _PreviewCard extends StatelessWidget {
-  const _PreviewCard({required this.item});
+class _TagChip extends StatelessWidget {
+  const _TagChip({required this.tag});
 
-  final _PreviewItem item;
+  final CatalogTagSummary tag;
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(6),
+      width: 220,
+      padding: const EdgeInsets.all(10),
       decoration: BoxDecoration(
-        color: CatalogPreviewSection._surfaceCard,
-        borderRadius: BorderRadius.circular(26),
+        color: CatalogPreviewSection._card,
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: CatalogPreviewSection._outline),
       ),
-      child: Stack(
+      child: Row(
         children: [
-          Positioned.fill(
-            child: DecoratedBox(
-              decoration: BoxDecoration(
-                color: item.tierColor.withAlpha(38),
-                borderRadius: BorderRadius.circular(22),
-              ),
-            ),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(10),
+            child: tag.heroImageUrl == null
+                ? Container(
+                    width: 40,
+                    height: 58,
+                    color: CatalogPreviewSection._cardRaised,
+                  )
+                : Image.network(
+                    tag.heroImageUrl!,
+                    width: 40,
+                    height: 58,
+                    fit: BoxFit.cover,
+                    errorBuilder: (_, __, ___) => Container(
+                      width: 40,
+                      height: 58,
+                      color: CatalogPreviewSection._cardRaised,
+                    ),
+                  ),
           ),
-          Positioned.fill(
-            child: Container(
-              margin: const EdgeInsets.all(2),
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(20),
-                border: Border.all(color: item.tierColor.withAlpha(142), width: 2),
-              ),
-            ),
-          ),
-          Positioned.fill(
-            child: Container(
-              margin: const EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(18),
-                gradient: LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                  colors: item.previewGradient,
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(
+                  tag.label.replaceAll('_', ' '),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                    color: CatalogPreviewSection._text,
+                  ),
                 ),
-              ),
-            ),
-          ),
-          Positioned.fill(
-            child: Padding(
-              padding: const EdgeInsets.all(8),
-              child: _PreviewArt(item: item),
-            ),
-          ),
-          Positioned(
-            top: 8,
-            left: 8,
-            child: SizedBox(
-              width: 42,
-              height: 42,
-              child: Image.asset(item.tierIconAsset, fit: BoxFit.contain),
-            ),
-          ),
-          Positioned(
-            top: 10,
-            right: 10,
-            child: Container(
-              width: 34,
-              height: 34,
-              decoration: BoxDecoration(
-                color: Colors.black.withAlpha(92),
-                borderRadius: BorderRadius.circular(14),
-              ),
-              child: Icon(
-                item.favorite ? Icons.favorite_rounded : Icons.favorite_border,
-                color: Colors.white.withAlpha(230),
-                size: 18,
-              ),
+                const SizedBox(height: 4),
+                Text(
+                  '${tag.count} Items',
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    color: CatalogPreviewSection._muted,
+                  ),
+                ),
+              ],
             ),
           ),
         ],
@@ -499,223 +423,255 @@ class _PreviewCard extends StatelessWidget {
   }
 }
 
-class _PreviewArt extends StatelessWidget {
-  const _PreviewArt({required this.item});
+class _WallpaperGrid extends StatelessWidget {
+  const _WallpaperGrid({required this.items});
 
-  final _PreviewItem item;
+  final List<CatalogFeedItem> items;
 
   @override
   Widget build(BuildContext context) {
-    final List<Widget> layers = <Widget>[
-      Positioned.fill(
-        child: DecoratedBox(
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(18),
-            gradient: RadialGradient(
-              center: const Alignment(0, -0.6),
-              radius: 1.15,
-              colors: <Color>[
-                item.glowColor.withAlpha(180),
-                item.glowColor.withAlpha(28),
-                Colors.transparent,
-              ],
-            ),
-          ),
-        ),
-      ),
-    ];
-
-    switch (item.motif) {
-      case _PreviewMotif.rings:
-        layers.addAll(<Widget>[
-          Positioned(
-            left: 18,
-            top: 90,
-            child: Transform.rotate(
-              angle: -0.35,
-              child: Container(
-                width: 132,
-                height: 132,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  border: Border.all(color: item.glowColor, width: 8),
-                  boxShadow: <BoxShadow>[
-                    BoxShadow(
-                      color: item.glowColor.withAlpha(120),
-                      blurRadius: 30,
-                    ),
-                  ],
-                ),
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final columns = constraints.maxWidth >= 1100
+            ? 4
+            : constraints.maxWidth >= 760
+            ? 3
+            : 2;
+        const spacing = 16.0;
+        final width =
+            (constraints.maxWidth - spacing * (columns - 1)) / columns;
+        return Wrap(
+          spacing: spacing,
+          runSpacing: spacing,
+          children: [
+            for (final item in items)
+              SizedBox(
+                width: width,
+                child: _WallpaperCard(item: item),
               ),
-            ),
-          ),
-          Positioned(
-            left: 36,
-            top: 122,
-            child: Transform.rotate(
-              angle: -0.35,
-              child: Container(
-                width: 94,
-                height: 94,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  border: Border.all(color: const Color(0xFFF0503E), width: 6),
-                ),
-              ),
-            ),
-          ),
-        ]);
-      case _PreviewMotif.orb:
-        layers.add(
-          Positioned(
-            right: 22,
-            bottom: 40,
-            child: Container(
-              width: 120,
-              height: 120,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                gradient: RadialGradient(
-                  colors: <Color>[
-                    Colors.white.withAlpha(220),
-                    item.glowColor.withAlpha(150),
-                    Colors.transparent,
-                  ],
-                ),
-              ),
-            ),
-          ),
+          ],
         );
-      case _PreviewMotif.sails:
-        layers.addAll(<Widget>[
-          Positioned(
-            bottom: 30,
-            right: 28,
-            child: Container(
-              width: 86,
-              height: 130,
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(30),
-                gradient: const LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                  colors: <Color>[
-                    Color(0xFFF5E6C6),
-                    Color(0xFFBE9A61),
-                  ],
-                ),
-              ),
-            ),
-          ),
-          Positioned(
-            bottom: 24,
-            right: 94,
-            child: Container(
-              width: 2,
-              height: 146,
-              color: Colors.white.withAlpha(180),
-            ),
-          ),
-        ]);
-      case _PreviewMotif.portrait:
-        layers.addAll(<Widget>[
-          Positioned(
-            left: 34,
-            top: 54,
-            child: Container(
-              width: 120,
-              height: 190,
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(80),
-                gradient: LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                  colors: <Color>[
-                    Colors.white.withAlpha(170),
-                    item.glowColor.withAlpha(110),
-                    Colors.black.withAlpha(70),
-                  ],
-                ),
-              ),
-            ),
-          ),
-        ]);
-      case _PreviewMotif.jelly:
-        layers.addAll(<Widget>[
-          Positioned(
-            right: 26,
-            top: 62,
-            child: Container(
-              width: 118,
-              height: 160,
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(64),
-                gradient: LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                  colors: <Color>[
-                    Colors.white.withAlpha(150),
-                    item.glowColor.withAlpha(120),
-                    Colors.transparent,
-                  ],
-                ),
-              ),
-            ),
-          ),
-        ]);
-    }
-
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(18),
-      child: Stack(children: layers),
+      },
     );
   }
 }
 
-enum _PreviewMotif { rings, orb, sails, portrait, jelly }
+class _WallpaperCard extends StatelessWidget {
+  const _WallpaperCard({required this.item});
 
-class _FilterChipModel {
-  const _FilterChipModel({
-    required this.id,
-    required this.iconAsset,
-    required this.label,
-  });
+  final CatalogFeedItem item;
 
-  final String id;
-  final String iconAsset;
+  Color get _tierColor {
+    switch (item.tierId?.toLowerCase()) {
+      case 'free':
+        return const Color(0xFF34B886);
+      case 'gold':
+        return const Color(0xFFBA9040);
+      case 'amethyst':
+        return const Color(0xFF7D69D8);
+      case 'onyx':
+        return const Color(0xFF6D7584);
+      case 'platinum':
+        return const Color(0xFFE7EEF9);
+      default:
+        return CatalogPreviewSection._accent;
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: BoxDecoration(
+        color: CatalogPreviewSection._card,
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: CatalogPreviewSection._outline),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Stack(
+            children: [
+              ClipRRect(
+                borderRadius: const BorderRadius.vertical(
+                  top: Radius.circular(24),
+                ),
+                child: AspectRatio(
+                  aspectRatio: 9 / 16,
+                  child: item.previewImageUrl == null
+                      ? _FallbackPreview()
+                      : Image.network(
+                          item.previewImageUrl!,
+                          fit: BoxFit.cover,
+                          errorBuilder: (_, __, ___) => _FallbackPreview(),
+                          loadingBuilder: (context, child, progress) =>
+                              progress == null ? child : _FallbackPreview(),
+                        ),
+                ),
+              ),
+              Positioned(
+                top: 14,
+                left: 14,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 6,
+                  ),
+                  decoration: BoxDecoration(
+                    color: _tierColor,
+                    borderRadius: BorderRadius.circular(999),
+                  ),
+                  child: Text(
+                    item.tierLabel,
+                    style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                      color: item.tierId?.toLowerCase() == 'platinum'
+                          ? Colors.black
+                          : Colors.white,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ),
+              ),
+              if (item.previewVideoUrl != null)
+                Positioned(
+                  top: 14,
+                  right: 14,
+                  child: Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: Colors.black.withAlpha(130),
+                      borderRadius: BorderRadius.circular(14),
+                    ),
+                    child: const Icon(
+                      Icons.play_arrow_rounded,
+                      color: Colors.white,
+                      size: 20,
+                    ),
+                  ),
+                ),
+            ],
+          ),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 14, 16, 16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  item.title,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                    color: CatalogPreviewSection._text,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  item.description?.trim().isNotEmpty == true
+                      ? item.description!
+                      : 'Read-only Preview aus dem Live-Katalog.',
+                  maxLines: 3,
+                  overflow: TextOverflow.ellipsis,
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    color: CatalogPreviewSection._muted,
+                  ),
+                ),
+                const SizedBox(height: 12),
+                Wrap(
+                  spacing: 6,
+                  runSpacing: 6,
+                  children: [
+                    _MetaChip(label: item.id),
+                    if (item.tags.isNotEmpty)
+                      _MetaChip(label: item.tags.first.replaceAll('_', ' ')),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _MetaChip extends StatelessWidget {
+  const _MetaChip({required this.label});
+
   final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      decoration: BoxDecoration(
+        color: CatalogPreviewSection._cardRaised,
+        borderRadius: BorderRadius.circular(999),
+      ),
+      child: Text(
+        label,
+        style: Theme.of(
+          context,
+        ).textTheme.bodyMedium?.copyWith(color: CatalogPreviewSection._muted),
+      ),
+    );
+  }
 }
 
-class _CatalogGroup {
-  const _CatalogGroup({
-    required this.title,
-    required this.ctaLabel,
-    required this.items,
-  });
+class _Pill extends StatelessWidget {
+  const _Pill({required this.icon, required this.label, required this.color});
 
-  final String title;
-  final String ctaLabel;
-  final List<_PreviewItem> items;
+  final IconData icon;
+  final String label;
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+      decoration: BoxDecoration(
+        color: CatalogPreviewSection._card,
+        borderRadius: BorderRadius.circular(999),
+        border: Border.all(color: CatalogPreviewSection._outline),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 18, color: color),
+          const SizedBox(width: 8),
+          Text(
+            label,
+            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+              color: CatalogPreviewSection._text,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 }
 
-class _PreviewItem {
-  const _PreviewItem({
-    required this.title,
-    required this.tierLabel,
-    required this.tierIconAsset,
-    required this.tierColor,
-    required this.glowColor,
-    required this.previewGradient,
-    required this.motif,
-    this.favorite = false,
-  });
-
-  final String title;
-  final String tierLabel;
-  final String tierIconAsset;
-  final Color tierColor;
-  final Color glowColor;
-  final List<Color> previewGradient;
-  final _PreviewMotif motif;
-  final bool favorite;
+class _FallbackPreview extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return DecoratedBox(
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: <Color>[
+            Color(0xFF0E2238),
+            Color(0xFF154066),
+            Color(0xFF1D5E88),
+          ],
+        ),
+      ),
+      child: Center(
+        child: Icon(
+          Icons.motion_photos_on_rounded,
+          size: 42,
+          color: Colors.white.withAlpha(170),
+        ),
+      ),
+    );
+  }
 }

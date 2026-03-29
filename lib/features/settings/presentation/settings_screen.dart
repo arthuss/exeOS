@@ -13,16 +13,11 @@ class SettingsScreen extends StatelessWidget {
     final scheme = theme.colorScheme;
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Settings'),
-      ),
+      appBar: AppBar(title: const Text('Settings')),
       body: ListView(
         padding: const EdgeInsets.fromLTRB(24, 24, 24, 32),
         children: [
-          Text(
-            'Appearance',
-            style: theme.textTheme.headlineMedium,
-          ),
+          Text('Appearance', style: theme.textTheme.headlineMedium),
           const SizedBox(height: 12),
           Card(
             child: Padding(
@@ -75,7 +70,7 @@ class SettingsScreen extends StatelessWidget {
                   Text('Phase A status', style: theme.textTheme.titleLarge),
                   const SizedBox(height: 10),
                   Text(
-                    'Branding, routing, and hosting-ready shell are in place. Firebase auth, feeds, and account linking come next.',
+                    'Branding, Routing und der feed-gebundene Read-only-Katalog stehen. Als Naechstes folgen Authentifizierung, Account-Linking und Entitlements.',
                     style: theme.textTheme.bodyMedium?.copyWith(
                       color: scheme.onSurfaceVariant,
                     ),
