@@ -1,0 +1,14 @@
+[
+  {
+    "relation": [
+      "delegate_permission/common.handle_all_urls"
+    ],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "com.exeget.livewallpaper",
+      "sha256_cert_fingerprints": [
+        "11:3D:14:DE:99:98:6B:F9:B8:C1:A2:8B:50:D9:9B:4C:3D:42:D6:CD:C8:1B:41:77:EF:61:68:87:EA:3A:BC:7A"
+      ]
+    }
+  }
+]

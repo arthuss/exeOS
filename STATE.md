@@ -11,3 +11,6 @@
 - When feed items expose a neutral `marketing` slice, `exeOS` now prefers its title/description/slug-derived canonical ref on the public detail surface.
 - `exeOS` now serves the Pinterest base tracking tag (`pintrk`, tag id `2613860752663`) from `web/index.html` on both `dotexe-pro.web.app` and `www.dotexe.pro`.
 - The current implementation also re-fires `pintrk(''page'')` on `pushState`, `replaceState`, `load`, and `popstate` so Flutter web route changes remain visible to Pinterest without full page reloads.
+- `exeOS` detail pages now include an Android app CTA that targets the matching wallpaper directly through `intent://w/<productId>#Intent;scheme=exeget;package=com.exeget.livewallpaper;...` with Play Store fallback.
+- The repo now also contains `/.well-known/assetlinks.json` plus a dedicated no-cache hosting header, but this web slice is not live yet because the latest Firebase Hosting deploy failed on CLI auth (`firebase login --reauth` required again).
+- The current `assetlinks.json` fingerprint came from the local release/upload keystore and still needs one Play Console cross-check against the real Play app-signing certificate before HTTPS app-link auto-verification should be treated as final.

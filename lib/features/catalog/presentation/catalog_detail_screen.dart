@@ -146,8 +146,18 @@ class _DetailBody extends StatelessWidget {
           spacing: 12,
           runSpacing: 12,
           children: [
+            FilledButton.icon(
+              onPressed: () => _launchInAndroidApp(item),
+              icon: const Icon(Icons.phone_android_rounded),
+              label: const Text('In Android-App oeffnen'),
+            ),
+            OutlinedButton.icon(
+              onPressed: _launchPlayStoreListing,
+              icon: const Icon(Icons.shop_rounded),
+              label: const Text('Bei Google Play'),
+            ),
             if (item.previewVideoUrl != null)
-              FilledButton.icon(
+              OutlinedButton.icon(
                 onPressed: () => _launchExternal(item.previewVideoUrl!),
                 icon: const Icon(Icons.play_circle_fill_rounded),
                 label: const Text('Preview-Video oeffnen'),
@@ -551,6 +561,30 @@ Future<void> _launchExternal(String url) async {
   }
   await launchUrl(uri, mode: LaunchMode.platformDefault);
 }
+
+Future<void> _launchInAndroidApp(CatalogFeedItem item) async {
+  final uri = _androidIntentUriFor(item.id);
+  await launchUrl(uri, mode: LaunchMode.externalApplication);
+}
+
+Future<void> _launchPlayStoreListing() async {
+  await launchUrl(_playStoreListingUri, mode: LaunchMode.externalApplication);
+}
+
+Uri _androidIntentUriFor(String wallpaperRef) {
+  final normalizedRef = wallpaperRef.trim().isEmpty ? 'unknown' : wallpaperRef.trim();
+  final fallback = Uri.encodeComponent(_playStoreListingUri.toString());
+  return Uri.parse(
+    'intent://w/$normalizedRef'
+    '#Intent;scheme=exeget;package=$_androidPackageName;'
+    'S.browser_fallback_url=$fallback;end',
+  );
+}
+
+const String _androidPackageName = 'com.exeget.livewallpaper';
+final Uri _playStoreListingUri = Uri.parse(
+  'https://play.google.com/store/apps/details?id=$_androidPackageName',
+);
 
 Color _tierColorFor(CatalogFeedItem item) {
   switch (item.tierId?.toLowerCase()) {
