@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../legal/presentation/widgets/legal_footer.dart';
 import '../data/catalog_feed_repository.dart';
 import 'widgets/catalog_preview_section.dart';
 
@@ -207,45 +208,53 @@ class _CatalogBrowser extends StatelessWidget {
                 const SizedBox(height: 20),
                 _FilterSection(
                   title: 'Tier',
-                  children: _tierOptions.map((option) {
-                    return ChoiceChip(
-                      label: Text(option.label),
-                      selected: selectedTier == option.id,
-                      onSelected: (_) => onTierSelected(
-                        selectedTier == option.id ? null : option.id,
-                      ),
-                    );
-                  }).toList(growable: false),
+                  children: _tierOptions
+                      .map((option) {
+                        return ChoiceChip(
+                          label: Text(option.label),
+                          selected: selectedTier == option.id,
+                          onSelected: (_) => onTierSelected(
+                            selectedTier == option.id ? null : option.id,
+                          ),
+                        );
+                      })
+                      .toList(growable: false),
                 ),
                 if (collectionOptions.isNotEmpty) ...[
                   const SizedBox(height: 16),
                   _FilterSection(
                     title: 'Collections',
-                    children: collectionOptions.map((collection) {
-                      return ChoiceChip(
-                        label: Text(collection),
-                        selected: selectedCollection == collection,
-                        onSelected: (_) => onCollectionSelected(
-                          selectedCollection == collection ? null : collection,
-                        ),
-                      );
-                    }).toList(growable: false),
+                    children: collectionOptions
+                        .map((collection) {
+                          return ChoiceChip(
+                            label: Text(collection),
+                            selected: selectedCollection == collection,
+                            onSelected: (_) => onCollectionSelected(
+                              selectedCollection == collection
+                                  ? null
+                                  : collection,
+                            ),
+                          );
+                        })
+                        .toList(growable: false),
                   ),
                 ],
                 if (featuredTags.isNotEmpty) ...[
                   const SizedBox(height: 16),
                   _FilterSection(
                     title: 'Tags',
-                    children: featuredTags.map((tag) {
-                      final label = tag.label.replaceAll('_', ' ');
-                      return ChoiceChip(
-                        label: Text(label),
-                        selected: selectedTag == tag.slug,
-                        onSelected: (_) => onTagSelected(
-                          selectedTag == tag.slug ? null : tag.slug,
-                        ),
-                      );
-                    }).toList(growable: false),
+                    children: featuredTags
+                        .map((tag) {
+                          final label = tag.label.replaceAll('_', ' ');
+                          return ChoiceChip(
+                            label: Text(label),
+                            selected: selectedTag == tag.slug,
+                            onSelected: (_) => onTagSelected(
+                              selectedTag == tag.slug ? null : tag.slug,
+                            ),
+                          );
+                        })
+                        .toList(growable: false),
                   ),
                 ],
                 if (hasActiveFilters) ...[
@@ -264,9 +273,9 @@ class _CatalogBrowser extends StatelessWidget {
           ),
         ),
         if (filteredItems.isEmpty)
-          const SliverFillRemaining(
-            hasScrollBody: false,
-            child: _EmptyCatalogState(),
+          const SliverPadding(
+            padding: EdgeInsets.fromLTRB(24, 0, 24, 24),
+            sliver: SliverToBoxAdapter(child: _EmptyCatalogState()),
           )
         else
           SliverPadding(
@@ -276,8 +285,10 @@ class _CatalogBrowser extends StatelessWidget {
                 final item = filteredItems[index];
                 return CatalogWallpaperCard(
                   item: item,
-                  onTap: (selectedItem) =>
-                      context.push('/w/${selectedItem.canonicalRef}', extra: selectedItem),
+                  onTap: (selectedItem) => context.push(
+                    '/w/${selectedItem.canonicalRef}',
+                    extra: selectedItem,
+                  ),
                 );
               }, childCount: filteredItems.length),
               gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
@@ -288,6 +299,10 @@ class _CatalogBrowser extends StatelessWidget {
               ),
             ),
           ),
+        const SliverPadding(
+          padding: EdgeInsets.fromLTRB(24, 0, 24, 36),
+          sliver: SliverToBoxAdapter(child: LegalFooter()),
+        ),
       ],
     );
   }
@@ -317,35 +332,39 @@ class _CatalogBrowser extends StatelessWidget {
 
   List<CatalogFeedItem> _filterItems(List<CatalogFeedItem> items) {
     final normalizedQuery = query.trim().toLowerCase();
-    final filtered = items.where((item) {
-      final normalizedTier = _resolveTierId(item);
-      if (selectedTier != null && normalizedTier != selectedTier) {
-        return false;
-      }
-      if (selectedTag != null &&
-          !item.tags.any((tag) => tag.trim().toLowerCase() == selectedTag)) {
-        return false;
-      }
-      if (selectedCollection != null &&
-          !item.collections.any(
-            (collection) =>
-                collection.trim().toLowerCase() ==
-                selectedCollection!.trim().toLowerCase(),
-          )) {
-        return false;
-      }
-      if (normalizedQuery.isEmpty) {
-        return true;
-      }
-      final haystack = <String>[
-        item.title,
-        item.description ?? '',
-        ...item.tags,
-        ...item.collections,
-        item.tierLabel,
-      ].join(' ').toLowerCase();
-      return haystack.contains(normalizedQuery);
-    }).toList(growable: false);
+    final filtered = items
+        .where((item) {
+          final normalizedTier = _resolveTierId(item);
+          if (selectedTier != null && normalizedTier != selectedTier) {
+            return false;
+          }
+          if (selectedTag != null &&
+              !item.tags.any(
+                (tag) => tag.trim().toLowerCase() == selectedTag,
+              )) {
+            return false;
+          }
+          if (selectedCollection != null &&
+              !item.collections.any(
+                (collection) =>
+                    collection.trim().toLowerCase() ==
+                    selectedCollection!.trim().toLowerCase(),
+              )) {
+            return false;
+          }
+          if (normalizedQuery.isEmpty) {
+            return true;
+          }
+          final haystack = <String>[
+            item.title,
+            item.description ?? '',
+            ...item.tags,
+            ...item.collections,
+            item.tierLabel,
+          ].join(' ').toLowerCase();
+          return haystack.contains(normalizedQuery);
+        })
+        .toList(growable: false);
 
     filtered.sort((a, b) => b.updatedAt.compareTo(a.updatedAt));
     return filtered;
@@ -403,10 +422,11 @@ class _CatalogLoadState extends StatelessWidget {
                   children: [
                     Text(
                       title,
-                      style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                        color: CatalogPreviewSection.textColor,
-                        fontWeight: FontWeight.w700,
-                      ),
+                      style: Theme.of(context).textTheme.headlineSmall
+                          ?.copyWith(
+                            color: CatalogPreviewSection.textColor,
+                            fontWeight: FontWeight.w700,
+                          ),
                     ),
                     const SizedBox(height: 10),
                     Text(
@@ -464,15 +484,21 @@ class _SearchBox extends StatelessWidget {
         fillColor: CatalogPreviewSection.cardColor,
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(20),
-          borderSide: const BorderSide(color: CatalogPreviewSection.outlineColor),
+          borderSide: const BorderSide(
+            color: CatalogPreviewSection.outlineColor,
+          ),
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(20),
-          borderSide: const BorderSide(color: CatalogPreviewSection.outlineColor),
+          borderSide: const BorderSide(
+            color: CatalogPreviewSection.outlineColor,
+          ),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(20),
-          borderSide: const BorderSide(color: CatalogPreviewSection.accentColor),
+          borderSide: const BorderSide(
+            color: CatalogPreviewSection.accentColor,
+          ),
         ),
       ),
     );

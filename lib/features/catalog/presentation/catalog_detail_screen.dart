@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import '../../legal/presentation/widgets/legal_footer.dart';
 import '../data/catalog_feed_repository.dart';
 import 'widgets/catalog_preview_section.dart';
 
@@ -176,6 +177,8 @@ class _DetailBody extends StatelessWidget {
               ),
           ],
         ),
+        const SizedBox(height: 28),
+        const LegalFooter(),
       ],
     );
   }
@@ -572,7 +575,9 @@ Future<void> _launchPlayStoreListing() async {
 }
 
 Uri _androidIntentUriFor(String wallpaperRef) {
-  final normalizedRef = wallpaperRef.trim().isEmpty ? 'unknown' : wallpaperRef.trim();
+  final normalizedRef = wallpaperRef.trim().isEmpty
+      ? 'unknown'
+      : wallpaperRef.trim();
   final fallback = Uri.encodeComponent(_playStoreListingUri.toString());
   return Uri.parse(
     'intent://w/$normalizedRef'

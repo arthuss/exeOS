@@ -16,3 +16,7 @@
 - The current `assetlinks.json` fingerprint came from the local release/upload keystore and still needs one Play Console cross-check against the real Play app-signing certificate before HTTPS app-link auto-verification should be treated as final.
 - The pending Android app-link website slice is now live on both `dotexe-pro.web.app` and `www.dotexe.pro`.
 - Live `/.well-known/assetlinks.json` currently serves a broader fingerprint set than the checked-in minimal file, and it already includes the local release/upload-key fingerprint. Treat the remaining work as Play Console validation, not a missing website deploy.
+- `exeOS` now serves centralized legal pages directly on `www.dotexe.pro` under `/privacy-policy`, `/terms-of-service`, `/delete-account`, and `/impressum` instead of relying on the older `arthuss.github.io` split.
+- Flutter web now uses path URL strategy so those legal routes stay on canonical clean paths without hash-fragment fallback.
+- The current legal content is centralized in repo state (`lib/features/legal/data/legal_documents.dart`) and linked from the catalog, detail, settings, and legal pages themselves.
+- The only intentionally open legal follow-up is filling the final full provider metadata for the Impressum if additional legal entity/address fields are required beyond the current centralized contact baseline.

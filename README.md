@@ -10,6 +10,7 @@ Phase A focuses on a productized shell:
 - router-based navigation
 - full-catalog landing surface backed by static hub feeds
 - canonical wallpaper landing routes under `/w/:wallpaperRef`
+- centralized legal routes under `/privacy-policy`, `/terms-of-service`, `/delete-account`, and `/impressum`
 - settings and theme handling
 - web hosting target via Firebase Hosting
 
