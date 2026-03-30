@@ -9,3 +9,5 @@
 - The current full-grid dataset comes from `web/feeds/catalog/all.json` (mirrored from `Wallpaper-management-hub/dist/feeds/catalog/all.json`), while detail pages resolve from the same feed snapshots under `/w/:wallpaperRef`.
 - `exeOS` top tags are still static feed metadata from `tags.json`; they are not yet wired to the Android discovery/analytics trend path.
 - When feed items expose a neutral `marketing` slice, `exeOS` now prefers its title/description/slug-derived canonical ref on the public detail surface.
+- `exeOS` now serves the Pinterest base tracking tag (`pintrk`, tag id `2613860752663`) from `web/index.html` on both `dotexe-pro.web.app` and `www.dotexe.pro`.
+- The current implementation also re-fires `pintrk(''page'')` on `pushState`, `replaceState`, `load`, and `popstate` so Flutter web route changes remain visible to Pinterest without full page reloads.

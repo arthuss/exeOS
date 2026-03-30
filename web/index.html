@@ -7,6 +7,51 @@
   <meta content="IE=Edge" http-equiv="X-UA-Compatible">
   <meta name="description" content="exeOS brings the live wallpaper catalog to web and future iOS builds.">
   <meta name="p:domain_verify" content="62eb30bb548044d3fe6eb7f238a78198"/>
+  <script>
+    !function(e){
+      if(!window.pintrk){
+        window.pintrk = function () {
+          window.pintrk.queue.push(Array.prototype.slice.call(arguments));
+        };
+        var n = window.pintrk;
+        n.queue = [];
+        n.version = "3.0";
+        var t = document.createElement("script");
+        t.async = true;
+        t.src = e;
+        var r = document.getElementsByTagName("script")[0];
+        r.parentNode.insertBefore(t, r);
+      }
+    }("https://s.pinimg.com/ct/core.js");
+    pintrk('load', '2613860752663');
+    (function () {
+      var lastTrackedPath = null;
+      function trackPage() {
+        var currentPath = window.location.pathname + window.location.search + window.location.hash;
+        if (currentPath === lastTrackedPath) {
+          return;
+        }
+        lastTrackedPath = currentPath;
+        pintrk('page');
+      }
+      var originalPushState = window.history.pushState;
+      window.history.pushState = function () {
+        originalPushState.apply(window.history, arguments);
+        window.setTimeout(trackPage, 0);
+      };
+      var originalReplaceState = window.history.replaceState;
+      window.history.replaceState = function () {
+        originalReplaceState.apply(window.history, arguments);
+        window.setTimeout(trackPage, 0);
+      };
+      window.addEventListener('load', trackPage);
+      window.addEventListener('popstate', trackPage);
+    }());
+  </script>
+  <noscript>
+    <img height="1" width="1" style="display:none;" alt=""
+      src="https://ct.pinterest.com/v3/?event=init&tid=2613860752663&noscript=1" />
+  </noscript>
 
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black">
