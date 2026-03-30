@@ -14,3 +14,5 @@
 - `exeOS` detail pages now include an Android app CTA that targets the matching wallpaper directly through `intent://w/<productId>#Intent;scheme=exeget;package=com.exeget.livewallpaper;...` with Play Store fallback.
 - The repo now also contains `/.well-known/assetlinks.json` plus a dedicated no-cache hosting header, but this web slice is not live yet because the latest Firebase Hosting deploy failed on CLI auth (`firebase login --reauth` required again).
 - The current `assetlinks.json` fingerprint came from the local release/upload keystore and still needs one Play Console cross-check against the real Play app-signing certificate before HTTPS app-link auto-verification should be treated as final.
+- The pending Android app-link website slice is now live on both `dotexe-pro.web.app` and `www.dotexe.pro`.
+- Live `/.well-known/assetlinks.json` currently serves a broader fingerprint set than the checked-in minimal file, and it already includes the local release/upload-key fingerprint. Treat the remaining work as Play Console validation, not a missing website deploy.
