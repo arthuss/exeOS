@@ -46,19 +46,19 @@ class LegalFooter extends StatelessWidget {
             children: [
               _FooterLinkChip(
                 label: 'Datenschutz',
-                onTap: () => context.push('/privacy-policy'),
+                onTap: () => context.go('/privacy-policy'),
               ),
               _FooterLinkChip(
                 label: 'Nutzungsbedingungen',
-                onTap: () => context.push('/terms-of-service'),
+                onTap: () => context.go('/terms-of-service'),
               ),
               _FooterLinkChip(
                 label: 'Konto loeschen',
-                onTap: () => context.push('/delete-account'),
+                onTap: () => context.go('/delete-account'),
               ),
               _FooterLinkChip(
                 label: 'Impressum',
-                onTap: () => context.push('/impressum'),
+                onTap: () => context.go('/impressum'),
               ),
               _FooterLinkChip(
                 label: legalContactEmail,

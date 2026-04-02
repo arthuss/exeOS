@@ -157,23 +157,25 @@ class _DetailBody extends StatelessWidget {
               icon: const Icon(Icons.shop_rounded),
               label: const Text('Bei Google Play'),
             ),
-            if (item.previewVideoUrl != null)
-              OutlinedButton.icon(
-                onPressed: () => _launchExternal(item.previewVideoUrl!),
-                icon: const Icon(Icons.play_circle_fill_rounded),
-                label: const Text('Preview-Video oeffnen'),
-              ),
-            if (item.previewImageUrl != null)
-              OutlinedButton.icon(
-                onPressed: () => _launchExternal(item.previewImageUrl!),
-                icon: const Icon(Icons.image_rounded),
-                label: const Text('Preview-Bild oeffnen'),
-              ),
             if (previewUrl != null)
               OutlinedButton.icon(
                 onPressed: () => _launchExternal(previewUrl),
-                icon: const Icon(Icons.open_in_new_rounded),
-                label: const Text('Asset im neuen Tab'),
+                icon: Icon(
+                  item.hasPreviewVideo
+                      ? Icons.play_circle_fill_rounded
+                      : Icons.image_rounded,
+                ),
+                label: Text(
+                  item.hasPreviewVideo
+                      ? 'Preview extern oeffnen'
+                      : 'Preview-Bild extern oeffnen',
+                ),
+              ),
+            if (item.previewImageUrl != null && item.previewVideoUrl != null)
+              OutlinedButton.icon(
+                onPressed: () => _launchExternal(item.previewImageUrl!),
+                icon: const Icon(Icons.image_rounded),
+                label: const Text('Standbild extern oeffnen'),
               ),
           ],
         ),
@@ -191,6 +193,107 @@ class _PreviewSurface extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final previewUrl = item.previewVideoUrl ?? item.previewImageUrl;
+    final previewCard = ClipRRect(
+      borderRadius: BorderRadius.circular(24),
+      child: Stack(
+        children: [
+          AspectRatio(
+            aspectRatio: 9 / 16,
+            child: item.previewImageUrl == null
+                ? const _DetailFallback()
+                : Image.network(
+                    item.previewImageUrl!,
+                    fit: BoxFit.cover,
+                    webHtmlElementStrategy: WebHtmlElementStrategy.prefer,
+                    errorBuilder: (_, __, ___) => const _DetailFallback(),
+                    loadingBuilder: (context, child, progress) =>
+                        progress == null ? child : const _DetailFallback(),
+                  ),
+          ),
+          Positioned.fill(
+            child: DecoratedBox(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [
+                    Colors.black.withAlpha(26),
+                    Colors.transparent,
+                    Colors.black.withAlpha(165),
+                  ],
+                ),
+              ),
+            ),
+          ),
+          Positioned(
+            left: 18,
+            right: 18,
+            bottom: 18,
+            child: Row(
+              children: [
+                Container(
+                  width: 54,
+                  height: 54,
+                  decoration: BoxDecoration(
+                    color: Colors.black.withAlpha(145),
+                    borderRadius: BorderRadius.circular(18),
+                  ),
+                  child: Icon(
+                    item.hasPreviewVideo
+                        ? Icons.play_arrow_rounded
+                        : Icons.image_rounded,
+                    size: 34,
+                    color: Colors.white,
+                  ),
+                ),
+                const SizedBox(width: 14),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        item.hasPreviewVideo
+                            ? 'Preview-Video verfuegbar'
+                            : 'Preview-Bild verfuegbar',
+                        style: Theme.of(context).textTheme.titleMedium
+                            ?.copyWith(
+                              color: Colors.white,
+                              fontWeight: FontWeight.w700,
+                            ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        item.hasPreviewVideo
+                            ? 'Thumbnail und Play-Overlay oeffnen direkt das exportierte Preview-MP4.'
+                            : 'Das Thumbnail oeffnet direkt das exportierte Preview-Bild.',
+                        style: Theme.of(context).textTheme.bodyMedium
+                            ?.copyWith(
+                              color: Colors.white.withAlpha(210),
+                              height: 1.35,
+                            ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+
+    final interactivePreviewCard = previewUrl == null
+        ? previewCard
+        : MouseRegion(
+            cursor: SystemMouseCursors.click,
+            child: GestureDetector(
+              behavior: HitTestBehavior.opaque,
+              onTap: () => _launchExternal(previewUrl),
+              child: previewCard,
+            ),
+          );
+
     return Container(
       decoration: BoxDecoration(
         color: CatalogPreviewSection.cardColor,
@@ -210,98 +313,7 @@ class _PreviewSurface extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 14),
-            ClipRRect(
-              borderRadius: BorderRadius.circular(24),
-              child: Stack(
-                children: [
-                  AspectRatio(
-                    aspectRatio: 9 / 16,
-                    child: item.previewImageUrl == null
-                        ? const _DetailFallback()
-                        : Image.network(
-                            item.previewImageUrl!,
-                            fit: BoxFit.cover,
-                            webHtmlElementStrategy:
-                                WebHtmlElementStrategy.prefer,
-                            errorBuilder: (_, __, ___) =>
-                                const _DetailFallback(),
-                            loadingBuilder: (context, child, progress) =>
-                                progress == null
-                                ? child
-                                : const _DetailFallback(),
-                          ),
-                  ),
-                  Positioned.fill(
-                    child: DecoratedBox(
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          begin: Alignment.topCenter,
-                          end: Alignment.bottomCenter,
-                          colors: [
-                            Colors.black.withAlpha(26),
-                            Colors.transparent,
-                            Colors.black.withAlpha(165),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
-                  Positioned(
-                    left: 18,
-                    right: 18,
-                    bottom: 18,
-                    child: Row(
-                      children: [
-                        Container(
-                          width: 54,
-                          height: 54,
-                          decoration: BoxDecoration(
-                            color: Colors.black.withAlpha(145),
-                            borderRadius: BorderRadius.circular(18),
-                          ),
-                          child: Icon(
-                            item.hasPreviewVideo
-                                ? Icons.play_arrow_rounded
-                                : Icons.image_rounded,
-                            size: 34,
-                            color: Colors.white,
-                          ),
-                        ),
-                        const SizedBox(width: 14),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                item.hasPreviewVideo
-                                    ? 'Preview-Video verfuegbar'
-                                    : 'Preview-Bild verfuegbar',
-                                style: Theme.of(context).textTheme.titleMedium
-                                    ?.copyWith(
-                                      color: Colors.white,
-                                      fontWeight: FontWeight.w700,
-                                    ),
-                              ),
-                              const SizedBox(height: 4),
-                              Text(
-                                item.hasPreviewVideo
-                                    ? 'Die Karte fuehrt jetzt in eine echte Detailansicht. Das MP4 liegt separat als verlinkbares Preview-Asset vor.'
-                                    : 'Fuer diesen Eintrag ist aktuell nur das Preview-Bild im Feed-Snapshot vorhanden.',
-                                style: Theme.of(context).textTheme.bodyMedium
-                                    ?.copyWith(
-                                      color: Colors.white.withAlpha(210),
-                                      height: 1.35,
-                                    ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            ),
+            interactivePreviewCard,
           ],
         ),
       ),

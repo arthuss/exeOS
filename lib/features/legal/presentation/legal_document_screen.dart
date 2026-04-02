@@ -238,7 +238,7 @@ class _LegalSectionCard extends StatelessWidget {
 
   Future<void> _openLink(BuildContext context, LegalLinkData link) async {
     if (link.internal) {
-      context.push(link.target);
+      context.go(link.target);
       return;
     }
     final uri = Uri.tryParse(link.target);

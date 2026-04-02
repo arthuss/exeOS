@@ -20,3 +20,5 @@
 - Flutter web now uses path URL strategy so those legal routes stay on canonical clean paths without hash-fragment fallback.
 - The current legal content is centralized in repo state (`lib/features/legal/data/legal_documents.dart`) and linked from the catalog, detail, settings, and legal pages themselves.
 - The only intentionally open legal follow-up is filling the final full provider metadata for the Impressum if additional legal entity/address fields are required beyond the current centralized contact baseline.
+- The live exeOS web shell now treats privacy/terms/delete-account/impressum as top-level routes in navigation behavior as well as routing configuration: footer/legal links use context.go(...), so /settings no longer stays as the apparent URL when navigating into legal pages.
+- Wallpaper detail pages now make the large preview surface itself clickable; when a preview MP4 exists, the thumbnail plus play overlay opens that MP4 externally, and the adjacent button labels now describe external preview/open-image actions instead of duplicating a generic asset link.
