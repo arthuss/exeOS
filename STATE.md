@@ -26,3 +26,7 @@
   - `web/feeds/catalog/all.json` was resynced from Hub after the `product0-799` Firestore cutoff.
   - The current live `www.dotexe.pro/feeds/catalog/all.json` snapshot contains 1488 items.
   - Removed legacy examples such as `product99` are no longer present in the live web catalog feed.
+- 2026-04-04 feed state:
+  - `web/feeds` was resynced from the Hub export after the category-aware schema rollout.
+  - The current live `www.dotexe.pro/feeds/catalog/all.json` snapshot still contains 1488 items.
+  - The live web app now also serves `www.dotexe.pro/feeds/categories.json` with 9 categories from the Hub schema.
