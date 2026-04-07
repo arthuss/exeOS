@@ -22,3 +22,4 @@
 - 2026-04-07: Lowered exeOS Hosting cache aggressiveness for the compiled Flutter app bundle during the current rapid web iteration phase. irebase.json now also serves /main.dart.js with 
 o-cache, no-store, must-revalidate so browser updates pick up new web builds faster; this should be revisited before a later stable production tuning pass.
 
+- 2026-04-07: Deployed the reduced exeOS web bundle cache live to Firebase Hosting and verified that https://www.dotexe.pro/main.dart.js now returns Cache-Control no-store, must-revalidate, no-cache. This keeps browser refreshes aligned with current web builds during the active debug/iteration phase.

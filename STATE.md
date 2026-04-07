@@ -39,3 +39,4 @@
 - 2026-04-07: xeOS Hosting now serves /main.dart.js with 
 o-cache, no-store, must-revalidate in addition to index.html, lutter_bootstrap.js, and lutter_service_worker.js. This is an intentional fast-iteration web setting to reduce stale-browser bundles during active product work and should be reevaluated before later production cache tuning.
 
+- 2026-04-07: Live Hosting verification: https://www.dotexe.pro/main.dart.js now responds with Cache-Control no-store, must-revalidate, no-cache. The current web deployment is intentionally optimized for iteration freshness rather than long bundle caching and should be revisited before later production cache tuning.
