@@ -95,7 +95,7 @@ class HomeScreen extends StatelessWidget {
             const _FeatureCard(
               title: 'Catalog-first rollout',
               body:
-                  'Der oeffentliche Read-only-Katalog ist jetzt feed-gebunden. Authentifizierung, Entitlements, Zahlungen und Account-Linking folgen danach.',
+                  'Der oeffentliche Read-only-Katalog ist feed-gebunden, und das Web-Auth-Fundament ist gesetzt. Als Naechstes folgen Owner-Resolution, Entitlements, Zahlungen und die spaeteren Connect-Flows.',
               icon: Icons.auto_awesome_mosaic_rounded,
             ),
           ],

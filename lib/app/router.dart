@@ -4,6 +4,8 @@ import 'package:go_router/go_router.dart';
 import '../features/catalog/data/catalog_feed_repository.dart';
 import '../features/catalog/presentation/catalog_detail_screen.dart';
 import '../features/catalog/presentation/catalog_screen.dart';
+import '../features/auth/presentation/auth_complete_screen.dart';
+import '../features/auth/presentation/integration_complete_screen.dart';
 import '../features/legal/presentation/legal_document_screen.dart';
 import '../features/settings/presentation/settings_screen.dart';
 
@@ -25,6 +27,45 @@ final GoRouter appRouter = GoRouter(
           child: CatalogDetailScreen(
             wallpaperRef: state.pathParameters['wallpaperRef'] ?? '',
             initialItem: initialItem,
+          ),
+        );
+      },
+    ),
+    GoRoute(
+      path: '/auth/complete',
+      pageBuilder: (BuildContext context, GoRouterState state) {
+        final provider = state.uri.queryParameters['provider'] ?? 'google';
+        final nextPath = state.uri.queryParameters['next'] ?? '/settings';
+        return NoTransitionPage(
+          child: AuthCompleteScreen(provider: provider, nextPath: nextPath),
+        );
+      },
+    ),
+    GoRoute(
+      path: '/connect/drive/complete',
+      pageBuilder: (BuildContext context, GoRouterState state) {
+        final nextPath = state.uri.queryParameters['next'] ?? '/settings';
+        return NoTransitionPage(
+          child: IntegrationCompleteScreen(
+            title: 'Google Drive callback',
+            body:
+                'The route is reserved for the later Drive scope handoff. Drive stays a separate consent from Google owner login.',
+            nextPath: nextPath,
+          ),
+        );
+      },
+    ),
+    GoRoute(
+      path: '/integrations/:provider/complete',
+      pageBuilder: (BuildContext context, GoRouterState state) {
+        final provider = state.pathParameters['provider'] ?? 'provider';
+        final nextPath = state.uri.queryParameters['next'] ?? '/settings';
+        return NoTransitionPage(
+          child: IntegrationCompleteScreen(
+            title: '$provider callback',
+            body:
+                'This route is reserved for later provider-specific return flows, so social integrations can land back in the Flutter shell without introducing a second callback model.',
+            nextPath: nextPath,
           ),
         );
       },

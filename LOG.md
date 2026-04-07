@@ -23,3 +23,4 @@
 o-cache, no-store, must-revalidate so browser updates pick up new web builds faster; this should be revisited before a later stable production tuning pass.
 
 - 2026-04-07: Deployed the reduced exeOS web bundle cache live to Firebase Hosting and verified that https://www.dotexe.pro/main.dart.js now returns Cache-Control no-store, must-revalidate, no-cache. This keeps browser refreshes aligned with current web builds during the active debug/iteration phase.
+- 2026-04-07: Added the first exeOS Firebase web-auth foundation in repo state without a live deploy yet. The Flutter web app now initializes `firebase_core` / `firebase_auth`, Settings exposes Google sign-in/sign-out, and callback routes exist for `/auth/complete`, `/connect/drive/complete`, and `/integrations/:provider/complete`. Owner merge, web entitlements, Drive connect, and social connects remain follow-up phases.
