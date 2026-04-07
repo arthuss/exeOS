@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:video_player/video_player.dart';
 
 import '../../legal/presentation/widgets/legal_footer.dart';
 import '../data/catalog_feed_repository.dart';
@@ -193,22 +194,33 @@ class _PreviewSurface extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final previewUrl = item.previewVideoUrl ?? item.previewImageUrl;
     final previewCard = ClipRRect(
       borderRadius: BorderRadius.circular(24),
       child: Stack(
         children: [
           AspectRatio(
             aspectRatio: 9 / 16,
-            child: item.previewImageUrl == null
+            child: item.previewVideoUrl != null
+                ? _EmbeddedPreviewVideo(
+                    videoUrl: item.previewVideoUrl!,
+                    posterUrl: item.previewImageUrl,
+                  )
+                : item.previewImageUrl == null
                 ? const _DetailFallback()
-                : Image.network(
-                    item.previewImageUrl!,
-                    fit: BoxFit.cover,
-                    webHtmlElementStrategy: WebHtmlElementStrategy.prefer,
-                    errorBuilder: (_, __, ___) => const _DetailFallback(),
-                    loadingBuilder: (context, child, progress) =>
-                        progress == null ? child : const _DetailFallback(),
+                : MouseRegion(
+                    cursor: SystemMouseCursors.click,
+                    child: GestureDetector(
+                      behavior: HitTestBehavior.opaque,
+                      onTap: () => _launchExternal(item.previewImageUrl!),
+                      child: Image.network(
+                        item.previewImageUrl!,
+                        fit: BoxFit.cover,
+                        webHtmlElementStrategy: WebHtmlElementStrategy.prefer,
+                        errorBuilder: (_, __, ___) => const _DetailFallback(),
+                        loadingBuilder: (context, child, progress) =>
+                            progress == null ? child : const _DetailFallback(),
+                      ),
+                    ),
                   ),
           ),
           Positioned.fill(
@@ -241,9 +253,9 @@ class _PreviewSurface extends StatelessWidget {
                   ),
                   child: Icon(
                     item.hasPreviewVideo
-                        ? Icons.play_arrow_rounded
+                        ? Icons.smart_display_rounded
                         : Icons.image_rounded,
-                    size: 34,
+                    size: 30,
                     color: Colors.white,
                   ),
                 ),
@@ -254,7 +266,7 @@ class _PreviewSurface extends StatelessWidget {
                     children: [
                       Text(
                         item.hasPreviewVideo
-                            ? 'Preview-Video verfuegbar'
+                            ? 'Preview-Video eingebettet'
                             : 'Preview-Bild verfuegbar',
                         style: Theme.of(context).textTheme.titleMedium
                             ?.copyWith(
@@ -265,13 +277,12 @@ class _PreviewSurface extends StatelessWidget {
                       const SizedBox(height: 4),
                       Text(
                         item.hasPreviewVideo
-                            ? 'Thumbnail und Play-Overlay oeffnen direkt das exportierte Preview-MP4.'
+                            ? 'Das exportierte Preview-MP4 laeuft direkt in der Detailseite. Unten kannst du es bei Bedarf trotzdem extern oeffnen.'
                             : 'Das Thumbnail oeffnet direkt das exportierte Preview-Bild.',
-                        style: Theme.of(context).textTheme.bodyMedium
-                            ?.copyWith(
-                              color: Colors.white.withAlpha(210),
-                              height: 1.35,
-                            ),
+                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                          color: Colors.white.withAlpha(210),
+                          height: 1.35,
+                        ),
                       ),
                     ],
                   ),
@@ -282,17 +293,6 @@ class _PreviewSurface extends StatelessWidget {
         ],
       ),
     );
-
-    final interactivePreviewCard = previewUrl == null
-        ? previewCard
-        : MouseRegion(
-            cursor: SystemMouseCursors.click,
-            child: GestureDetector(
-              behavior: HitTestBehavior.opaque,
-              onTap: () => _launchExternal(previewUrl),
-              child: previewCard,
-            ),
-          );
 
     return Container(
       decoration: BoxDecoration(
@@ -313,8 +313,179 @@ class _PreviewSurface extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 14),
-            interactivePreviewCard,
+            previewCard,
           ],
+        ),
+      ),
+    );
+  }
+}
+
+class _EmbeddedPreviewVideo extends StatefulWidget {
+  const _EmbeddedPreviewVideo({required this.videoUrl, this.posterUrl});
+
+  final String videoUrl;
+  final String? posterUrl;
+
+  @override
+  State<_EmbeddedPreviewVideo> createState() => _EmbeddedPreviewVideoState();
+}
+
+class _EmbeddedPreviewVideoState extends State<_EmbeddedPreviewVideo> {
+  late final VideoPlayerController _controller;
+  bool _failed = false;
+  bool _muted = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = VideoPlayerController.networkUrl(Uri.parse(widget.videoUrl));
+    _initialize();
+  }
+
+  Future<void> _initialize() async {
+    try {
+      await _controller.initialize();
+      await _controller.setLooping(true);
+      await _controller.setVolume(0);
+      await _controller.play();
+      if (!mounted) {
+        return;
+      }
+      setState(() {});
+    } catch (_) {
+      if (!mounted) {
+        return;
+      }
+      setState(() {
+        _failed = true;
+      });
+    }
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  Future<void> _togglePlayback() async {
+    if (!_controller.value.isInitialized) {
+      return;
+    }
+    if (_controller.value.isPlaying) {
+      await _controller.pause();
+    } else {
+      await _controller.play();
+    }
+    if (mounted) {
+      setState(() {});
+    }
+  }
+
+  Future<void> _toggleMute() async {
+    if (!_controller.value.isInitialized) {
+      return;
+    }
+    final nextMuted = !_muted;
+    await _controller.setVolume(nextMuted ? 0 : 1);
+    if (mounted) {
+      setState(() {
+        _muted = nextMuted;
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (_failed) {
+      return _buildPosterFallback();
+    }
+
+    if (!_controller.value.isInitialized) {
+      return Stack(
+        fit: StackFit.expand,
+        children: [
+          _buildPosterFallback(),
+          const Center(child: CircularProgressIndicator()),
+        ],
+      );
+    }
+
+    final size = _controller.value.size;
+    return Stack(
+      fit: StackFit.expand,
+      children: [
+        GestureDetector(
+          behavior: HitTestBehavior.opaque,
+          onTap: _togglePlayback,
+          child: FittedBox(
+            fit: BoxFit.cover,
+            child: SizedBox(
+              width: size.width,
+              height: size.height,
+              child: VideoPlayer(_controller),
+            ),
+          ),
+        ),
+        Positioned(
+          top: 14,
+          right: 14,
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              _PreviewControlButton(
+                icon: _controller.value.isPlaying
+                    ? Icons.pause_rounded
+                    : Icons.play_arrow_rounded,
+                onTap: _togglePlayback,
+              ),
+              const SizedBox(width: 8),
+              _PreviewControlButton(
+                icon: _muted
+                    ? Icons.volume_off_rounded
+                    : Icons.volume_up_rounded,
+                onTap: _toggleMute,
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildPosterFallback() {
+    if (widget.posterUrl == null) {
+      return const _DetailFallback();
+    }
+    return Image.network(
+      widget.posterUrl!,
+      fit: BoxFit.cover,
+      webHtmlElementStrategy: WebHtmlElementStrategy.prefer,
+      errorBuilder: (_, __, ___) => const _DetailFallback(),
+      loadingBuilder: (context, child, progress) =>
+          progress == null ? child : const _DetailFallback(),
+    );
+  }
+}
+
+class _PreviewControlButton extends StatelessWidget {
+  const _PreviewControlButton({required this.icon, required this.onTap});
+
+  final IconData icon;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: Colors.black.withAlpha(150),
+      borderRadius: BorderRadius.circular(14),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(14),
+        onTap: onTap,
+        child: Padding(
+          padding: const EdgeInsets.all(10),
+          child: Icon(icon, color: Colors.white, size: 20),
         ),
       ),
     );

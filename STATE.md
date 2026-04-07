@@ -30,3 +30,5 @@
   - `web/feeds` was resynced from the Hub export after the category-aware schema rollout.
   - The current live `www.dotexe.pro/feeds/catalog/all.json` snapshot still contains 1488 items.
   - The live web app now also serves `www.dotexe.pro/feeds/categories.json` with 9 categories from the Hub schema.
+- 2026-04-07: xeOS wallpaper detail pages now embed preview MP4 playback directly inside the public /w/:wallpaperRef surface via Flutter's ideo_player, instead of treating the main preview card as an external media link. External-open actions remain available as secondary controls, and the implementation is shared-web/future-iOS compatible.
+
