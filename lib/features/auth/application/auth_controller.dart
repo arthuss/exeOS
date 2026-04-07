@@ -35,19 +35,32 @@ class AuthRedirectOutcome {
 }
 
 class AuthController extends ChangeNotifier {
-  AuthController({FirebaseAuth? auth}) : _auth = auth ?? FirebaseAuth.instance {
-    _currentUser = _auth.currentUser;
-    _subscription = _auth.userChanges().listen((user) {
+  AuthController({FirebaseAuth? auth})
+    : _auth = auth ?? FirebaseAuth.instance,
+      _available = true,
+      _unavailableReason = null {
+    final firebaseAuth = _auth!;
+    _currentUser = firebaseAuth.currentUser;
+    _subscription = firebaseAuth.userChanges().listen((user) {
       _currentUser = user;
       notifyListeners();
     });
   }
 
-  final FirebaseAuth _auth;
+  AuthController.disabled(String reason)
+    : _auth = null,
+      _available = false,
+      _unavailableReason = reason;
+
+  final FirebaseAuth? _auth;
+  final bool _available;
+  final String? _unavailableReason;
 
   StreamSubscription<User?>? _subscription;
   User? _currentUser;
 
+  bool get isAvailable => _available;
+  String? get unavailableReason => _unavailableReason;
   User? get currentUser => _currentUser;
   bool get isSignedIn => _currentUser != null;
 
@@ -64,6 +77,14 @@ class AuthController extends ChangeNotifier {
   }
 
   Future<AuthRedirectOutcome> completeGoogleWebSignIn() async {
+    final firebaseAuth = _auth;
+    if (!_available || firebaseAuth == null) {
+      return AuthRedirectOutcome.unsupported(
+        _unavailableReason ??
+            'Firebase web auth is not configured in this build.',
+      );
+    }
+
     if (!kIsWeb) {
       return const AuthRedirectOutcome.unsupported(
         'Native Google sign-in for future iOS builds is not wired yet.',
@@ -71,19 +92,19 @@ class AuthController extends ChangeNotifier {
     }
 
     try {
-      final redirectResult = await _auth.getRedirectResult();
+      final redirectResult = await firebaseAuth.getRedirectResult();
       if (redirectResult.user != null) {
         return AuthRedirectOutcome.signedIn(redirectResult.user!);
       }
 
-      final currentUser = _auth.currentUser;
+      final currentUser = firebaseAuth.currentUser;
       if (currentUser != null) {
         return AuthRedirectOutcome.alreadySignedIn(currentUser);
       }
 
       final provider = GoogleAuthProvider()
         ..setCustomParameters(<String, String>{'prompt': 'select_account'});
-      await _auth.signInWithRedirect(provider);
+      await firebaseAuth.signInWithRedirect(provider);
       return const AuthRedirectOutcome.redirecting();
     } on FirebaseAuthException catch (error) {
       return AuthRedirectOutcome.error(_humanizeFirebaseError(error));
@@ -92,7 +113,13 @@ class AuthController extends ChangeNotifier {
     }
   }
 
-  Future<void> signOut() => _auth.signOut();
+  Future<void> signOut() async {
+    final firebaseAuth = _auth;
+    if (firebaseAuth == null) {
+      return;
+    }
+    await firebaseAuth.signOut();
+  }
 
   String _humanizeFirebaseError(FirebaseAuthException error) {
     switch (error.code) {

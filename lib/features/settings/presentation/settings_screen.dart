@@ -39,7 +39,10 @@ class SettingsScreen extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    authController.isSignedIn
+                    !authController.isAvailable
+                        ? (authController.unavailableReason ??
+                              'Firebase web auth is disabled in this build.')
+                        : authController.isSignedIn
                         ? 'The Firebase web session is live. This is the web-side base for later owner resolution, web entitlements, and provider connects.'
                         : 'Google sign-in now boots a real Firebase web session. Owner merge rules, Drive connect, and web entitlements still follow in separate steps.',
                     style: theme.textTheme.bodyMedium?.copyWith(
@@ -47,7 +50,13 @@ class SettingsScreen extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 16),
-                  if (authController.isSignedIn) ...[
+                  if (!authController.isAvailable) ...[
+                    OutlinedButton.icon(
+                      onPressed: null,
+                      icon: const Icon(Icons.lock_outline_rounded),
+                      label: const Text('Google sign-in not configured'),
+                    ),
+                  ] else if (authController.isSignedIn) ...[
                     ListTile(
                       contentPadding: EdgeInsets.zero,
                       leading: CircleAvatar(

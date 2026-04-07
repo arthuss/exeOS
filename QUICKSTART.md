@@ -14,6 +14,18 @@ pwsh -ExecutionPolicy Bypass -File .\scripts\sync-hub-feeds.ps1
 flutter run -d chrome
 ```
 
+Auth-Hinweis:
+- Die Web-Auth-Shell erwartet fuer einen auth-faehigen Build `EXEOS_FIREBASE_API_KEY`.
+- Ohne diesen Build-Define bleibt `exeOS` absichtlich lauffaehig, aber im auth-disabled Modus.
+- Beispiel fuer einen auth-faehigen lokalen Start:
+
+```powershell
+cd G:\workspaces\AndroidStudioProjects\exeOS
+$env:Path = 'C:\tools\flutter\bin;' + $env:Path
+$env:EXEOS_FIREBASE_API_KEY = '<firebase-browser-key>'
+flutter run -d chrome --dart-define=EXEOS_FIREBASE_API_KEY=$env:EXEOS_FIREBASE_API_KEY
+```
+
 ## Lokaler Browser-Preview auf festem Port
 
 ```powershell

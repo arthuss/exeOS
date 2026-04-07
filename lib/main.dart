@@ -10,20 +10,34 @@ import 'firebase_options.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+  final authAvailable = DefaultFirebaseOptions.isConfigured;
+  if (authAvailable) {
+    await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+  }
   usePathUrlStrategy();
-  runApp(const ExeOsBootstrap());
+  runApp(ExeOsBootstrap(authAvailable: authAvailable));
 }
 
 class ExeOsBootstrap extends StatelessWidget {
-  const ExeOsBootstrap({super.key});
+  const ExeOsBootstrap({
+    super.key,
+    required this.authAvailable,
+  });
+
+  final bool authAvailable;
 
   @override
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (_) => ThemeController()),
-        ChangeNotifierProvider(create: (_) => AuthController()),
+        ChangeNotifierProvider(
+          create: (_) => authAvailable
+              ? AuthController()
+              : AuthController.disabled(
+                  'Firebase web auth is not configured in this build. Add EXEOS_FIREBASE_API_KEY before promoting the auth UI live.',
+                ),
+        ),
       ],
       child: const ExeOsApp(),
     );
