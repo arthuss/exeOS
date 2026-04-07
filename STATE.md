@@ -36,3 +36,6 @@
 
 - 2026-04-07: The live exeOS preview surface is now stricter: web uses a native HTML5 embedded video element for preview MP4 playback, public detail pages no longer expose direct preview/standbild external-open buttons, and catalog/home cards use a non-clickbait Preview badge instead of a fake play-button affordance.
 
+- 2026-04-07: xeOS Hosting now serves /main.dart.js with 
+o-cache, no-store, must-revalidate in addition to index.html, lutter_bootstrap.js, and lutter_service_worker.js. This is an intentional fast-iteration web setting to reduce stale-browser bundles during active product work and should be reevaluated before later production cache tuning.
+

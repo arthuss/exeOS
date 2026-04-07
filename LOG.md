@@ -19,3 +19,6 @@
 
 - 2026-04-07: Hardened exeOS web preview behavior after the first inline-video rollout still felt misleading in real use. Public detail pages now use a web-native embedded HTML5 video surface for preview MP4s, the public preview/media escape buttons were removed to avoid scrape-friendly direct media links, and homepage/catalog cards now show a neutral Preview badge instead of a fake play-button treatment.
 
+- 2026-04-07: Lowered exeOS Hosting cache aggressiveness for the compiled Flutter app bundle during the current rapid web iteration phase. irebase.json now also serves /main.dart.js with 
+o-cache, no-store, must-revalidate so browser updates pick up new web builds faster; this should be revisited before a later stable production tuning pass.
+
