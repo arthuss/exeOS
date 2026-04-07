@@ -1,11 +1,11 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
-import 'package:video_player/video_player.dart';
 
 import '../../legal/presentation/widgets/legal_footer.dart';
 import '../data/catalog_feed_repository.dart';
 import 'widgets/catalog_preview_section.dart';
+import 'widgets/embedded_preview_video.dart';
 
 class CatalogDetailScreen extends StatelessWidget {
   const CatalogDetailScreen({
@@ -61,7 +61,6 @@ class _DetailBody extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final previewUrl = item.previewVideoUrl ?? item.previewImageUrl;
 
     return ListView(
       padding: const EdgeInsets.fromLTRB(24, 24, 24, 36),
@@ -115,7 +114,7 @@ class _DetailBody extends StatelessWidget {
         Text(
           item.displayDescription?.trim().isNotEmpty == true
               ? item.displayDescription!
-              : 'Read-only Preview aus dem Live-Katalog. Die Vorschau verlinkt direkt auf die exportierten Hub-Medien.',
+              : 'Read-only Preview aus dem Live-Katalog. Die Vorschau bleibt auf der Detailseite eingebettet.',
           style: theme.textTheme.bodyLarge?.copyWith(
             color: theme.colorScheme.onSurfaceVariant,
             height: 1.55,
@@ -158,26 +157,6 @@ class _DetailBody extends StatelessWidget {
               icon: const Icon(Icons.shop_rounded),
               label: const Text('Bei Google Play'),
             ),
-            if (previewUrl != null)
-              OutlinedButton.icon(
-                onPressed: () => _launchExternal(previewUrl),
-                icon: Icon(
-                  item.hasPreviewVideo
-                      ? Icons.play_circle_fill_rounded
-                      : Icons.image_rounded,
-                ),
-                label: Text(
-                  item.hasPreviewVideo
-                      ? 'Preview extern oeffnen'
-                      : 'Preview-Bild extern oeffnen',
-                ),
-              ),
-            if (item.previewImageUrl != null && item.previewVideoUrl != null)
-              OutlinedButton.icon(
-                onPressed: () => _launchExternal(item.previewImageUrl!),
-                icon: const Icon(Icons.image_rounded),
-                label: const Text('Standbild extern oeffnen'),
-              ),
           ],
         ),
         const SizedBox(height: 28),
@@ -196,101 +175,23 @@ class _PreviewSurface extends StatelessWidget {
   Widget build(BuildContext context) {
     final previewCard = ClipRRect(
       borderRadius: BorderRadius.circular(24),
-      child: Stack(
-        children: [
-          AspectRatio(
-            aspectRatio: 9 / 16,
-            child: item.previewVideoUrl != null
-                ? _EmbeddedPreviewVideo(
-                    videoUrl: item.previewVideoUrl!,
-                    posterUrl: item.previewImageUrl,
-                  )
-                : item.previewImageUrl == null
-                ? const _DetailFallback()
-                : MouseRegion(
-                    cursor: SystemMouseCursors.click,
-                    child: GestureDetector(
-                      behavior: HitTestBehavior.opaque,
-                      onTap: () => _launchExternal(item.previewImageUrl!),
-                      child: Image.network(
-                        item.previewImageUrl!,
-                        fit: BoxFit.cover,
-                        webHtmlElementStrategy: WebHtmlElementStrategy.prefer,
-                        errorBuilder: (_, __, ___) => const _DetailFallback(),
-                        loadingBuilder: (context, child, progress) =>
-                            progress == null ? child : const _DetailFallback(),
-                      ),
-                    ),
-                  ),
-          ),
-          Positioned.fill(
-            child: DecoratedBox(
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                  colors: [
-                    Colors.black.withAlpha(26),
-                    Colors.transparent,
-                    Colors.black.withAlpha(165),
-                  ],
-                ),
+      child: AspectRatio(
+        aspectRatio: 9 / 16,
+        child: item.previewVideoUrl != null
+            ? EmbeddedPreviewVideo(
+                videoUrl: item.previewVideoUrl!,
+                posterUrl: item.previewImageUrl,
+              )
+            : item.previewImageUrl == null
+            ? const _DetailFallback()
+            : Image.network(
+                item.previewImageUrl!,
+                fit: BoxFit.cover,
+                webHtmlElementStrategy: WebHtmlElementStrategy.prefer,
+                errorBuilder: (_, __, ___) => const _DetailFallback(),
+                loadingBuilder: (context, child, progress) =>
+                    progress == null ? child : const _DetailFallback(),
               ),
-            ),
-          ),
-          Positioned(
-            left: 18,
-            right: 18,
-            bottom: 18,
-            child: Row(
-              children: [
-                Container(
-                  width: 54,
-                  height: 54,
-                  decoration: BoxDecoration(
-                    color: Colors.black.withAlpha(145),
-                    borderRadius: BorderRadius.circular(18),
-                  ),
-                  child: Icon(
-                    item.hasPreviewVideo
-                        ? Icons.smart_display_rounded
-                        : Icons.image_rounded,
-                    size: 30,
-                    color: Colors.white,
-                  ),
-                ),
-                const SizedBox(width: 14),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        item.hasPreviewVideo
-                            ? 'Preview-Video eingebettet'
-                            : 'Preview-Bild verfuegbar',
-                        style: Theme.of(context).textTheme.titleMedium
-                            ?.copyWith(
-                              color: Colors.white,
-                              fontWeight: FontWeight.w700,
-                            ),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        item.hasPreviewVideo
-                            ? 'Das exportierte Preview-MP4 laeuft direkt in der Detailseite. Unten kannst du es bei Bedarf trotzdem extern oeffnen.'
-                            : 'Das Thumbnail oeffnet direkt das exportierte Preview-Bild.',
-                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                          color: Colors.white.withAlpha(210),
-                          height: 1.35,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
       ),
     );
 
@@ -314,178 +215,56 @@ class _PreviewSurface extends StatelessWidget {
             ),
             const SizedBox(height: 14),
             previewCard,
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _EmbeddedPreviewVideo extends StatefulWidget {
-  const _EmbeddedPreviewVideo({required this.videoUrl, this.posterUrl});
-
-  final String videoUrl;
-  final String? posterUrl;
-
-  @override
-  State<_EmbeddedPreviewVideo> createState() => _EmbeddedPreviewVideoState();
-}
-
-class _EmbeddedPreviewVideoState extends State<_EmbeddedPreviewVideo> {
-  late final VideoPlayerController _controller;
-  bool _failed = false;
-  bool _muted = true;
-
-  @override
-  void initState() {
-    super.initState();
-    _controller = VideoPlayerController.networkUrl(Uri.parse(widget.videoUrl));
-    _initialize();
-  }
-
-  Future<void> _initialize() async {
-    try {
-      await _controller.initialize();
-      await _controller.setLooping(true);
-      await _controller.setVolume(0);
-      await _controller.play();
-      if (!mounted) {
-        return;
-      }
-      setState(() {});
-    } catch (_) {
-      if (!mounted) {
-        return;
-      }
-      setState(() {
-        _failed = true;
-      });
-    }
-  }
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-
-  Future<void> _togglePlayback() async {
-    if (!_controller.value.isInitialized) {
-      return;
-    }
-    if (_controller.value.isPlaying) {
-      await _controller.pause();
-    } else {
-      await _controller.play();
-    }
-    if (mounted) {
-      setState(() {});
-    }
-  }
-
-  Future<void> _toggleMute() async {
-    if (!_controller.value.isInitialized) {
-      return;
-    }
-    final nextMuted = !_muted;
-    await _controller.setVolume(nextMuted ? 0 : 1);
-    if (mounted) {
-      setState(() {
-        _muted = nextMuted;
-      });
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    if (_failed) {
-      return _buildPosterFallback();
-    }
-
-    if (!_controller.value.isInitialized) {
-      return Stack(
-        fit: StackFit.expand,
-        children: [
-          _buildPosterFallback(),
-          const Center(child: CircularProgressIndicator()),
-        ],
-      );
-    }
-
-    final size = _controller.value.size;
-    return Stack(
-      fit: StackFit.expand,
-      children: [
-        GestureDetector(
-          behavior: HitTestBehavior.opaque,
-          onTap: _togglePlayback,
-          child: FittedBox(
-            fit: BoxFit.cover,
-            child: SizedBox(
-              width: size.width,
-              height: size.height,
-              child: VideoPlayer(_controller),
+            const SizedBox(height: 16),
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Container(
+                  width: 54,
+                  height: 54,
+                  decoration: BoxDecoration(
+                    color: CatalogPreviewSection.cardRaisedColor,
+                    borderRadius: BorderRadius.circular(18),
+                  ),
+                  child: Icon(
+                    item.hasPreviewVideo
+                        ? Icons.smart_display_rounded
+                        : Icons.image_rounded,
+                    size: 30,
+                    color: CatalogPreviewSection.textColor,
+                  ),
+                ),
+                const SizedBox(width: 14),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        item.hasPreviewVideo
+                            ? 'Preview-Video eingebettet'
+                            : 'Preview-Bild verfuegbar',
+                        style: Theme.of(context).textTheme.titleMedium
+                            ?.copyWith(
+                              color: CatalogPreviewSection.textColor,
+                              fontWeight: FontWeight.w700,
+                            ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        item.hasPreviewVideo
+                            ? 'Die Detailseite spielt das exportierte Preview-MP4 direkt ein und vermeidet dabei einen oeffentlichen Medien-Absprung.'
+                            : 'Das Standbild bleibt in der Detailseite eingebettet und fuehrt nicht auf eine externe Medien-URL.',
+                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                          color: CatalogPreviewSection.mutedColor,
+                          height: 1.35,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
             ),
-          ),
-        ),
-        Positioned(
-          top: 14,
-          right: 14,
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              _PreviewControlButton(
-                icon: _controller.value.isPlaying
-                    ? Icons.pause_rounded
-                    : Icons.play_arrow_rounded,
-                onTap: _togglePlayback,
-              ),
-              const SizedBox(width: 8),
-              _PreviewControlButton(
-                icon: _muted
-                    ? Icons.volume_off_rounded
-                    : Icons.volume_up_rounded,
-                onTap: _toggleMute,
-              ),
-            ],
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildPosterFallback() {
-    if (widget.posterUrl == null) {
-      return const _DetailFallback();
-    }
-    return Image.network(
-      widget.posterUrl!,
-      fit: BoxFit.cover,
-      webHtmlElementStrategy: WebHtmlElementStrategy.prefer,
-      errorBuilder: (_, __, ___) => const _DetailFallback(),
-      loadingBuilder: (context, child, progress) =>
-          progress == null ? child : const _DetailFallback(),
-    );
-  }
-}
-
-class _PreviewControlButton extends StatelessWidget {
-  const _PreviewControlButton({required this.icon, required this.onTap});
-
-  final IconData icon;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    return Material(
-      color: Colors.black.withAlpha(150),
-      borderRadius: BorderRadius.circular(14),
-      child: InkWell(
-        borderRadius: BorderRadius.circular(14),
-        onTap: onTap,
-        child: Padding(
-          padding: const EdgeInsets.all(10),
-          child: Icon(icon, color: Colors.white, size: 20),
+          ],
         ),
       ),
     );
@@ -738,14 +517,6 @@ class _DetailFallback extends StatelessWidget {
       ),
     );
   }
-}
-
-Future<void> _launchExternal(String url) async {
-  final uri = Uri.tryParse(url);
-  if (uri == null) {
-    return;
-  }
-  await launchUrl(uri, mode: LaunchMode.platformDefault);
 }
 
 Future<void> _launchInAndroidApp(CatalogFeedItem item) async {

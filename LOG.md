@@ -17,3 +17,5 @@
 
 - 2026-04-07: Deployed the embedded exeOS detail preview-video fix to Firebase Hosting after fresh CLI reauth. www.dotexe.pro/w/<ref> now serves the updated Flutter web build that keeps preview MP4 playback inline on the detail page instead of sending the main preview surface out to an external media URL.
 
+- 2026-04-07: Hardened exeOS web preview behavior after the first inline-video rollout still felt misleading in real use. Public detail pages now use a web-native embedded HTML5 video surface for preview MP4s, the public preview/media escape buttons were removed to avoid scrape-friendly direct media links, and homepage/catalog cards now show a neutral Preview badge instead of a fake play-button treatment.
+

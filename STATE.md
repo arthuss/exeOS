@@ -34,3 +34,5 @@
 
 - 2026-04-07: The embedded exeOS detail preview-video player is now live on Firebase Hosting. Public wallpaper detail routes under https://www.dotexe.pro/w/<ref> no longer treat the main preview card as an external-open link for videos; the current live build plays preview MP4s inline and keeps external-open as a secondary action.
 
+- 2026-04-07: The live exeOS preview surface is now stricter: web uses a native HTML5 embedded video element for preview MP4 playback, public detail pages no longer expose direct preview/standbild external-open buttons, and catalog/home cards use a non-clickbait Preview badge instead of a fake play-button affordance.
+
