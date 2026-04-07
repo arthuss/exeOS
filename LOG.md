@@ -15,3 +15,5 @@
 - 2026-04-04: Resynced `exeOS/web/feeds` from the category-aware Hub export and redeployed Hosting after fresh Firebase CLI reauth. The live web app on `www.dotexe.pro` now serves the updated 1488-item catalog feed plus `feeds/categories.json` with 9 categories from the new Hub schema.
 - 2026-04-07: Replaced the exeOS wallpaper detail page's external preview-video jump with an embedded preview player. CatalogDetailScreen now streams preview MP4s inline via ideo_player on the detail surface, keeps explicit external-open buttons only as fallback actions, and remains compatible with the future iOS Flutter client path.
 
+- 2026-04-07: Deployed the embedded exeOS detail preview-video fix to Firebase Hosting after fresh CLI reauth. www.dotexe.pro/w/<ref> now serves the updated Flutter web build that keeps preview MP4 playback inline on the detail page instead of sending the main preview surface out to an external media URL.
+

@@ -32,3 +32,5 @@
   - The live web app now also serves `www.dotexe.pro/feeds/categories.json` with 9 categories from the Hub schema.
 - 2026-04-07: xeOS wallpaper detail pages now embed preview MP4 playback directly inside the public /w/:wallpaperRef surface via Flutter's ideo_player, instead of treating the main preview card as an external media link. External-open actions remain available as secondary controls, and the implementation is shared-web/future-iOS compatible.
 
+- 2026-04-07: The embedded exeOS detail preview-video player is now live on Firebase Hosting. Public wallpaper detail routes under https://www.dotexe.pro/w/<ref> no longer treat the main preview card as an external-open link for videos; the current live build plays preview MP4s inline and keeps external-open as a secondary action.
+
