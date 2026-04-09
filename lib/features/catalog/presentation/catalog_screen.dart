@@ -21,6 +21,7 @@ class CatalogScreen extends StatefulWidget {
 
 class _CatalogScreenState extends State<CatalogScreen> {
   final TextEditingController _searchController = TextEditingController();
+  final ScrollController _scrollController = ScrollController();
 
   String _query = '';
   String? _selectedTier;
@@ -30,6 +31,7 @@ class _CatalogScreenState extends State<CatalogScreen> {
   @override
   void dispose() {
     _searchController.dispose();
+    _scrollController.dispose();
     super.dispose();
   }
 
@@ -90,6 +92,7 @@ class _CatalogScreenState extends State<CatalogScreen> {
             }
 
             return _CatalogBrowser(
+              scrollController: _scrollController,
               data: snapshot.data!,
               query: _query,
               selectedTier: _selectedTier,
@@ -102,16 +105,29 @@ class _CatalogScreenState extends State<CatalogScreen> {
               onCollectionSelected: (value) =>
                   setState(() => _selectedCollection = value),
               onClearFilters: _clearFilters,
+              onBrowseCatalog: _scrollToCatalog,
             );
           },
         ),
       ),
     );
   }
+
+  void _scrollToCatalog() {
+    if (!_scrollController.hasClients) {
+      return;
+    }
+    _scrollController.animateTo(
+      520,
+      duration: const Duration(milliseconds: 500),
+      curve: Curves.easeOutCubic,
+    );
+  }
 }
 
 class _CatalogBrowser extends StatelessWidget {
   const _CatalogBrowser({
+    required this.scrollController,
     required this.data,
     required this.query,
     required this.selectedTier,
@@ -123,8 +139,10 @@ class _CatalogBrowser extends StatelessWidget {
     required this.onTagSelected,
     required this.onCollectionSelected,
     required this.onClearFilters,
+    required this.onBrowseCatalog,
   });
 
+  final ScrollController scrollController;
   final CatalogPageData data;
   final String query;
   final String? selectedTier;
@@ -136,6 +154,7 @@ class _CatalogBrowser extends StatelessWidget {
   final ValueChanged<String?> onTagSelected;
   final ValueChanged<String?> onCollectionSelected;
   final VoidCallback onClearFilters;
+  final VoidCallback onBrowseCatalog;
 
   static const List<_TierOption> _tierOptions = <_TierOption>[
     _TierOption(id: null, label: 'Alle'),
@@ -182,6 +201,7 @@ class _CatalogBrowser extends StatelessWidget {
         selectedCollection != null;
 
     return CustomScrollView(
+      controller: scrollController,
       slivers: [
         SliverPadding(
           padding: const EdgeInsets.fromLTRB(24, 24, 24, 20),
@@ -207,58 +227,36 @@ class _CatalogBrowser extends StatelessWidget {
                       ],
                     ),
                   ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Wrap(
-                        spacing: 10,
-                        runSpacing: 10,
-                        children: const [
-                          _InfoPill(
-                            icon: Icons.verified_rounded,
-                            label: 'Official Android live wallpaper catalog',
-                            tone: CatalogPreviewSection.accentColor,
-                          ),
-                          _InfoPill(
-                            icon: Icons.rocket_launch_rounded,
-                            label: 'Production launch in under a week',
-                            tone: Color(0xFFFFC857),
-                          ),
+                  child: LayoutBuilder(
+                    builder: (context, constraints) {
+                      final isWide = constraints.maxWidth >= 980;
+                      final content = _CatalogHeroContent(
+                        isWide: isWide,
+                        onLaunchPlay: _launchPlayStoreListing,
+                        onBrowseCatalog: onBrowseCatalog,
+                      );
+                      final visual = _CatalogHeroVisual(isWide: isWide);
+
+                      if (!isWide) {
+                        return Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            content,
+                            const SizedBox(height: 24),
+                            visual,
+                          ],
+                        );
+                      }
+
+                      return Row(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          Expanded(flex: 11, child: content),
+                          const SizedBox(width: 28),
+                          Expanded(flex: 9, child: visual),
                         ],
-                      ),
-                      const SizedBox(height: 18),
-                      Text(
-                        'dotexe.pro',
-                        style: Theme.of(context).textTheme.displaySmall
-                            ?.copyWith(
-                              color: CatalogPreviewSection.textColor,
-                              fontWeight: FontWeight.w800,
-                            ),
-                      ),
-                      const SizedBox(height: 8),
-                      Text(
-                        'Animated live wallpapers for Android',
-                        style: Theme.of(context).textTheme.headlineSmall
-                            ?.copyWith(
-                              color: CatalogPreviewSection.textColor,
-                              fontWeight: FontWeight.w700,
-                            ),
-                      ),
-                      const SizedBox(height: 12),
-                      Text(
-                        'Explore fantasy, sci-fi, AMOLED and premium motion wallpapers in the official dotexe.pro catalog. Install the Android app on Google Play or browse the full live catalog below.',
-                        style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                          color: CatalogPreviewSection.mutedColor,
-                          height: 1.45,
-                        ),
-                      ),
-                      const SizedBox(height: 18),
-                      FilledButton.icon(
-                        onPressed: _launchPlayStoreListing,
-                        icon: const Icon(Icons.android_rounded),
-                        label: const Text('Get it on Google Play'),
-                      ),
-                    ],
+                      );
+                    },
                   ),
                 ),
                 const SizedBox(height: 18),
@@ -672,6 +670,142 @@ class _InfoPill extends StatelessWidget {
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _CatalogHeroContent extends StatelessWidget {
+  const _CatalogHeroContent({
+    required this.isWide,
+    required this.onLaunchPlay,
+    required this.onBrowseCatalog,
+  });
+
+  final bool isWide;
+  final VoidCallback onLaunchPlay;
+  final VoidCallback onBrowseCatalog;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Wrap(
+          spacing: 10,
+          runSpacing: 10,
+          children: const [
+            _InfoPill(
+              icon: Icons.verified_rounded,
+              label: 'Official Android live wallpaper catalog',
+              tone: CatalogPreviewSection.accentColor,
+            ),
+            _InfoPill(
+              icon: Icons.rocket_launch_rounded,
+              label: 'Production launch in under a week',
+              tone: Color(0xFFFFC857),
+            ),
+          ],
+        ),
+        SizedBox(height: isWide ? 22 : 18),
+        Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Image.asset(
+              'assets/branding/a-logo1024-glow.png',
+              width: isWide ? 72 : 56,
+              height: isWide ? 72 : 56,
+              fit: BoxFit.contain,
+            ),
+            const SizedBox(width: 14),
+            Flexible(
+              child: Text(
+                'dotexe.pro',
+                style: Theme.of(context).textTheme.displaySmall?.copyWith(
+                  color: CatalogPreviewSection.textColor,
+                  fontWeight: FontWeight.w800,
+                ),
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 10),
+        Text(
+          'Animated live wallpapers for Android',
+          style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+            color: CatalogPreviewSection.textColor,
+            fontWeight: FontWeight.w700,
+          ),
+        ),
+        const SizedBox(height: 12),
+        Text(
+          'Explore fantasy, sci-fi, AMOLED and premium motion wallpapers in the official dotexe.pro catalog. Install the Android app on Google Play or browse the full live catalog below.',
+          style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+            color: CatalogPreviewSection.mutedColor,
+            height: 1.45,
+          ),
+        ),
+        const SizedBox(height: 18),
+        Wrap(
+          spacing: 12,
+          runSpacing: 12,
+          children: [
+            FilledButton.icon(
+              onPressed: onLaunchPlay,
+              icon: const Icon(Icons.android_rounded),
+              label: const Text('Get it on Google Play'),
+            ),
+            OutlinedButton.icon(
+              onPressed: onBrowseCatalog,
+              icon: const Icon(Icons.grid_view_rounded),
+              label: const Text('Browse catalog'),
+            ),
+          ],
+        ),
+        const SizedBox(height: 14),
+        Text(
+          'Official site by exeget · Android app · Deep links · Full wallpaper catalog',
+          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+            color: CatalogPreviewSection.mutedColor,
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _CatalogHeroVisual extends StatelessWidget {
+  const _CatalogHeroVisual({required this.isWide});
+
+  final bool isWide;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: EdgeInsets.all(isWide ? 18 : 14),
+      decoration: BoxDecoration(
+        color: CatalogPreviewSection.cardColor.withAlpha(210),
+        borderRadius: BorderRadius.circular(28),
+        border: Border.all(
+          color: CatalogPreviewSection.outlineColor.withAlpha(210),
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: CatalogPreviewSection.accentColor.withAlpha(20),
+            blurRadius: 28,
+            offset: const Offset(0, 14),
+          ),
+        ],
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(20),
+        child: AspectRatio(
+          aspectRatio: 16 / 9,
+          child: Image.asset(
+            'assets/branding/playstore.png',
+            fit: BoxFit.cover,
+          ),
+        ),
       ),
     );
   }
