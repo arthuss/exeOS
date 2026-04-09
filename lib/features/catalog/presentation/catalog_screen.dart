@@ -211,7 +211,7 @@ class _CatalogBrowser extends StatelessWidget {
               children: [
                 Container(
                   width: double.infinity,
-                  padding: const EdgeInsets.all(24),
+                  padding: const EdgeInsets.all(26),
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(28),
                     border: Border.all(
@@ -249,39 +249,23 @@ class _CatalogBrowser extends StatelessWidget {
                       }
 
                       return Row(
-                        crossAxisAlignment: CrossAxisAlignment.center,
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Expanded(flex: 11, child: content),
-                          const SizedBox(width: 28),
-                          Expanded(flex: 9, child: visual),
+                          Expanded(flex: 12, child: content),
+                          const SizedBox(width: 34),
+                          Expanded(flex: 8, child: visual),
                         ],
                       );
                     },
                   ),
                 ),
-                const SizedBox(height: 18),
-                Wrap(
-                  spacing: 12,
-                  runSpacing: 12,
-                  children: [
-                    _InfoPill(
-                      icon: Icons.grid_view_rounded,
-                      label: '${data.allItems.length} Wallpapers gesamt',
-                      tone: CatalogPreviewSection.accentColor,
-                    ),
-                    _InfoPill(
-                      icon: Icons.schedule_rounded,
-                      label: 'Stand $generatedLabel',
-                      tone: CatalogPreviewSection.mutedColor,
-                    ),
-                    _InfoPill(
-                      icon: Icons.filter_alt_rounded,
-                      label: '${filteredItems.length} Treffer',
-                      tone: CatalogPreviewSection.mutedColor,
-                    ),
-                  ],
+                const SizedBox(height: 26),
+                _CatalogBridge(
+                  generatedLabel: generatedLabel,
+                  totalCount: data.allItems.length,
+                  filteredCount: filteredItems.length,
                 ),
-                const SizedBox(height: 24),
+                const SizedBox(height: 28),
                 _SearchBox(
                   controller: searchController,
                   onChanged: onQueryChanged,
@@ -707,14 +691,14 @@ class _CatalogHeroContent extends StatelessWidget {
             ),
           ],
         ),
-        SizedBox(height: isWide ? 22 : 18),
+        SizedBox(height: isWide ? 26 : 20),
         Row(
           mainAxisSize: MainAxisSize.min,
           children: [
             Image.asset(
               'assets/branding/a-logo1024-glow.png',
-              width: isWide ? 72 : 56,
-              height: isWide ? 72 : 56,
+              width: isWide ? 78 : 56,
+              height: isWide ? 78 : 56,
               fit: BoxFit.contain,
             ),
             const SizedBox(width: 14),
@@ -732,9 +716,10 @@ class _CatalogHeroContent extends StatelessWidget {
         const SizedBox(height: 10),
         Text(
           'Animated live wallpapers for Android',
-          style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+          style: Theme.of(context).textTheme.displaySmall?.copyWith(
             color: CatalogPreviewSection.textColor,
             fontWeight: FontWeight.w700,
+            height: 1.02,
           ),
         ),
         const SizedBox(height: 12),
@@ -754,11 +739,23 @@ class _CatalogHeroContent extends StatelessWidget {
               onPressed: onLaunchPlay,
               icon: const Icon(Icons.android_rounded),
               label: const Text('Get it on Google Play'),
+              style: FilledButton.styleFrom(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 20,
+                  vertical: 16,
+                ),
+              ),
             ),
             OutlinedButton.icon(
               onPressed: onBrowseCatalog,
               icon: const Icon(Icons.grid_view_rounded),
               label: const Text('Browse catalog'),
+              style: OutlinedButton.styleFrom(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 18,
+                  vertical: 16,
+                ),
+              ),
             ),
           ],
         ),
@@ -782,30 +779,166 @@ class _CatalogHeroVisual extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: EdgeInsets.all(isWide ? 18 : 14),
+      padding: EdgeInsets.all(isWide ? 12 : 10),
       decoration: BoxDecoration(
-        color: CatalogPreviewSection.cardColor.withAlpha(210),
+        color: CatalogPreviewSection.cardColor.withAlpha(160),
         borderRadius: BorderRadius.circular(28),
         border: Border.all(
-          color: CatalogPreviewSection.outlineColor.withAlpha(210),
+          color: CatalogPreviewSection.outlineColor.withAlpha(180),
         ),
         boxShadow: [
           BoxShadow(
-            color: CatalogPreviewSection.accentColor.withAlpha(20),
-            blurRadius: 28,
-            offset: const Offset(0, 14),
+            color: CatalogPreviewSection.accentColor.withAlpha(14),
+            blurRadius: 22,
+            offset: const Offset(0, 12),
           ),
         ],
       ),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(20),
-        child: AspectRatio(
-          aspectRatio: 16 / 9,
+      child: AspectRatio(
+        aspectRatio: isWide ? 1.12 : 1.28,
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: const [
+            Expanded(
+              child: _HeroTileCard(
+                assetPath: 'assets/branding/hero_tile_1.jpg',
+                topInset: 18,
+                bottomInset: 62,
+              ),
+            ),
+            SizedBox(width: 10),
+            Expanded(
+              child: _HeroTileCard(
+                assetPath: 'assets/branding/hero_tile_2.jpg',
+                topInset: 0,
+                bottomInset: 40,
+              ),
+            ),
+            SizedBox(width: 10),
+            Expanded(
+              child: _HeroTileCard(
+                assetPath: 'assets/branding/hero_tile_4.jpg',
+                topInset: 38,
+                bottomInset: 20,
+              ),
+            ),
+            SizedBox(width: 10),
+            Expanded(
+              child: _HeroTileCard(
+                assetPath: 'assets/branding/hero_tile_5.jpg',
+                topInset: 12,
+                bottomInset: 84,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _HeroTileCard extends StatelessWidget {
+  const _HeroTileCard({
+    required this.assetPath,
+    required this.topInset,
+    required this.bottomInset,
+  });
+
+  final String assetPath;
+  final double topInset;
+  final double bottomInset;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: EdgeInsets.only(top: topInset, bottom: bottomInset),
+      child: Container(
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(24),
+          border: Border.all(
+            color: Colors.white.withAlpha(18),
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withAlpha(32),
+              blurRadius: 16,
+              offset: const Offset(0, 10),
+            ),
+          ],
+        ),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(24),
           child: Image.asset(
-            'assets/branding/playstore.png',
+            assetPath,
             fit: BoxFit.cover,
           ),
         ),
+      ),
+    );
+  }
+}
+
+class _CatalogBridge extends StatelessWidget {
+  const _CatalogBridge({
+    required this.generatedLabel,
+    required this.totalCount,
+    required this.filteredCount,
+  });
+
+  final String generatedLabel;
+  final int totalCount;
+  final int filteredCount;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.fromLTRB(18, 16, 18, 14),
+      decoration: BoxDecoration(
+        color: CatalogPreviewSection.cardColor.withAlpha(140),
+        borderRadius: BorderRadius.circular(22),
+        border: Border.all(color: CatalogPreviewSection.outlineColor),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Browse the full wallpaper catalog',
+            style: Theme.of(context).textTheme.titleMedium?.copyWith(
+              color: CatalogPreviewSection.textColor,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+          const SizedBox(height: 6),
+          Text(
+            'Search by tier, collection and tags, then jump straight into the live feed.',
+            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+              color: CatalogPreviewSection.mutedColor,
+            ),
+          ),
+          const SizedBox(height: 14),
+          Wrap(
+            spacing: 12,
+            runSpacing: 12,
+            children: [
+              _InfoPill(
+                icon: Icons.grid_view_rounded,
+                label: '$totalCount Wallpapers gesamt',
+                tone: CatalogPreviewSection.accentColor,
+              ),
+              _InfoPill(
+                icon: Icons.schedule_rounded,
+                label: 'Stand $generatedLabel',
+                tone: CatalogPreviewSection.mutedColor,
+              ),
+              _InfoPill(
+                icon: Icons.filter_alt_rounded,
+                label: '$filteredCount Treffer',
+                tone: CatalogPreviewSection.mutedColor,
+              ),
+            ],
+          ),
+        ],
       ),
     );
   }

@@ -31,4 +31,8 @@ flutter:
   uses-material-design: true
   assets:
     - assets/catalog/badges/
-    - assets/branding/
+    - assets/branding/a-logo1024-glow.png
+    - assets/branding/hero_tile_1.jpg
+    - assets/branding/hero_tile_2.jpg
+    - assets/branding/hero_tile_4.jpg
+    - assets/branding/hero_tile_5.jpg
