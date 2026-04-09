@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../data/catalog_feed_repository.dart';
+import '../catalog_tier_branding.dart';
 
 enum CatalogPreviewLayout { compact, full }
 
@@ -476,152 +477,199 @@ class CatalogWallpaperCard extends StatelessWidget {
   final CatalogFeedItem item;
   final ValueChanged<CatalogFeedItem>? onTap;
 
-  Color get _tierColor {
-    switch (item.tierId?.toLowerCase()) {
-      case 'free':
-        return const Color(0xFF34B886);
-      case 'gold':
-        return const Color(0xFFBA9040);
-      case 'amethyst':
-        return const Color(0xFF7D69D8);
-      case 'onyx':
-        return const Color(0xFF6D7584);
-      case 'platinum':
-        return const Color(0xFFE7EEF9);
-      default:
-        return CatalogPreviewSection._accent;
-    }
-  }
+  Color get _tierColor => catalogTierColor(item.tierId);
+  Color get _tierOnColor => catalogTierOnColor(item.tierId);
+  String? get _tierBadgeAsset => catalogTierBadgeAsset(item.tierId);
+  bool get _usesTierFrame => isPremiumCatalogTier(item.tierId);
 
   @override
   Widget build(BuildContext context) {
     final card = Container(
       decoration: BoxDecoration(
-        color: CatalogPreviewSection._card,
-        borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: CatalogPreviewSection._outline),
+        borderRadius: BorderRadius.circular(26),
+        border: Border.all(
+          color: _usesTierFrame
+              ? _tierColor.withAlpha(160)
+              : CatalogPreviewSection._outline,
+        ),
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: _usesTierFrame
+              ? [
+                  _tierColor.withAlpha(54),
+                  CatalogPreviewSection._card,
+                  CatalogPreviewSection._cardRaised,
+                ]
+              : [
+                  CatalogPreviewSection._card,
+                  CatalogPreviewSection._card,
+                ],
+        ),
+        boxShadow: _usesTierFrame
+            ? [
+                BoxShadow(
+                  color: _tierColor.withAlpha(34),
+                  blurRadius: 18,
+                  offset: const Offset(0, 10),
+                ),
+              ]
+            : null,
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Stack(
-            children: [
-              ClipRRect(
-                borderRadius: const BorderRadius.vertical(
-                  top: Radius.circular(24),
-                ),
-                child: AspectRatio(
-                  aspectRatio: 9 / 16,
-                  child: item.previewImageUrl == null
-                      ? _FallbackPreview()
-                      : Image.network(
-                          item.previewImageUrl!,
-                          fit: BoxFit.cover,
-                          webHtmlElementStrategy: WebHtmlElementStrategy.prefer,
-                          errorBuilder: (_, __, ___) => _FallbackPreview(),
-                          loadingBuilder: (context, child, progress) =>
-                              progress == null ? child : _FallbackPreview(),
-                        ),
-                ),
-              ),
-              Positioned(
-                top: 14,
-                left: 14,
-                child: Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 10,
-                    vertical: 6,
-                  ),
-                  decoration: BoxDecoration(
-                    color: _tierColor,
-                    borderRadius: BorderRadius.circular(999),
-                  ),
-                  child: Text(
-                    item.tierLabel,
-                    style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                      color: item.tierId?.toLowerCase() == 'platinum'
-                          ? Colors.black
-                          : Colors.white,
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-                ),
-              ),
-              if (item.previewVideoUrl != null)
-                Positioned(
-                  top: 14,
-                  right: 14,
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 10,
-                      vertical: 7,
-                    ),
-                    decoration: BoxDecoration(
-                      color: Colors.black.withAlpha(130),
-                      borderRadius: BorderRadius.circular(999),
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        const Icon(
-                          Icons.smart_display_rounded,
-                          color: Colors.white,
-                          size: 16,
-                        ),
-                        const SizedBox(width: 6),
-                        Text(
-                          'Preview',
-                          style: Theme.of(context).textTheme.labelMedium
-                              ?.copyWith(
-                                color: Colors.white,
-                                fontWeight: FontWeight.w700,
-                              ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-            ],
-          ),
-          Padding(
-            padding: const EdgeInsets.fromLTRB(16, 14, 16, 16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  item.title,
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                    color: CatalogPreviewSection._text,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  item.description?.trim().isNotEmpty == true
-                      ? item.description!
-                      : 'Read-only Preview aus dem Live-Katalog.',
-                  maxLines: 3,
-                  overflow: TextOverflow.ellipsis,
-                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: CatalogPreviewSection._muted,
-                  ),
-                ),
-                const SizedBox(height: 12),
-                Wrap(
-                  spacing: 6,
-                  runSpacing: 6,
-                  children: [
-                    _MetaChip(label: item.id),
-                    if (item.tags.isNotEmpty)
-                      _MetaChip(label: item.tags.first.replaceAll('_', ' ')),
-                  ],
-                ),
-              ],
+      child: Padding(
+        padding: const EdgeInsets.all(1.25),
+        child: Container(
+          decoration: BoxDecoration(
+            color: CatalogPreviewSection._card,
+            borderRadius: BorderRadius.circular(24),
+            border: Border.all(
+              color: _usesTierFrame
+                  ? _tierColor.withAlpha(90)
+                  : CatalogPreviewSection._outline,
             ),
           ),
-        ],
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Stack(
+                children: [
+                  ClipRRect(
+                    borderRadius: const BorderRadius.vertical(
+                      top: Radius.circular(24),
+                    ),
+                    child: AspectRatio(
+                      aspectRatio: 9 / 16,
+                      child: item.previewImageUrl == null
+                          ? _FallbackPreview()
+                          : Image.network(
+                              item.previewImageUrl!,
+                              fit: BoxFit.cover,
+                              webHtmlElementStrategy:
+                                  WebHtmlElementStrategy.prefer,
+                              errorBuilder: (_, __, ___) => _FallbackPreview(),
+                              loadingBuilder: (context, child, progress) =>
+                                  progress == null
+                                      ? child
+                                      : _FallbackPreview(),
+                            ),
+                    ),
+                  ),
+                  Positioned(
+                    top: 14,
+                    left: 14,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 6,
+                      ),
+                      decoration: BoxDecoration(
+                        color: _tierColor.withAlpha(230),
+                        borderRadius: BorderRadius.circular(999),
+                        border: Border.all(color: Colors.black.withAlpha(28)),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          if (_tierBadgeAsset != null) ...[
+                            Image.asset(
+                              _tierBadgeAsset!,
+                              width: 18,
+                              height: 18,
+                              fit: BoxFit.contain,
+                            ),
+                            const SizedBox(width: 7),
+                          ],
+                          Text(
+                            item.tierLabel,
+                            style: Theme.of(context).textTheme.labelLarge
+                                ?.copyWith(
+                                  color: _tierOnColor,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  if (item.previewVideoUrl != null)
+                    Positioned(
+                      top: 14,
+                      right: 14,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 10,
+                          vertical: 7,
+                        ),
+                        decoration: BoxDecoration(
+                          color: Colors.black.withAlpha(130),
+                          borderRadius: BorderRadius.circular(999),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Icon(
+                              Icons.smart_display_rounded,
+                              color: Colors.white,
+                              size: 16,
+                            ),
+                            const SizedBox(width: 6),
+                            Text(
+                              'Preview',
+                              style: Theme.of(context).textTheme.labelMedium
+                                  ?.copyWith(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                ],
+              ),
+              Padding(
+                padding: const EdgeInsets.fromLTRB(16, 14, 16, 16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      item.title,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                        color: CatalogPreviewSection._text,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      item.description?.trim().isNotEmpty == true
+                          ? item.description!
+                          : 'Read-only Preview aus dem Live-Katalog.',
+                      maxLines: 3,
+                      overflow: TextOverflow.ellipsis,
+                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                        color: CatalogPreviewSection._muted,
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    Wrap(
+                      spacing: 6,
+                      runSpacing: 6,
+                      children: [
+                        _MetaChip(label: item.id),
+                        if (item.tags.isNotEmpty)
+                          _MetaChip(
+                            label: item.tags.first.replaceAll('_', ' '),
+                          ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
     );
 

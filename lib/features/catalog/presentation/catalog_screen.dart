@@ -1,9 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../../legal/presentation/widgets/legal_footer.dart';
 import '../data/catalog_feed_repository.dart';
+import 'catalog_tier_branding.dart';
 import 'widgets/catalog_preview_section.dart';
+
+const String _androidPackageName = 'com.exeget.livewallpaper';
+final Uri _playStoreListingUri = Uri.parse(
+  'https://play.google.com/store/apps/details?id=$_androidPackageName',
+);
 
 class CatalogScreen extends StatefulWidget {
   const CatalogScreen({super.key});
@@ -40,7 +47,7 @@ class _CatalogScreenState extends State<CatalogScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('dotexe'),
+        title: const Text('dotexe.pro'),
         actions: [
           IconButton(
             tooltip: 'Settings',
@@ -132,11 +139,31 @@ class _CatalogBrowser extends StatelessWidget {
 
   static const List<_TierOption> _tierOptions = <_TierOption>[
     _TierOption(id: null, label: 'Alle'),
-    _TierOption(id: 'free', label: 'Free'),
-    _TierOption(id: 'gold', label: 'Gold'),
-    _TierOption(id: 'amethyst', label: 'Amethyst'),
-    _TierOption(id: 'onyx', label: 'Onyx'),
-    _TierOption(id: 'platinum', label: 'Platinum'),
+    _TierOption(
+      id: 'free',
+      label: 'Free',
+      assetPath: 'assets/catalog/badges/tier_badge_free.png',
+    ),
+    _TierOption(
+      id: 'gold',
+      label: 'Gold',
+      assetPath: 'assets/catalog/badges/tier_badge_gold.png',
+    ),
+    _TierOption(
+      id: 'amethyst',
+      label: 'Amethyst',
+      assetPath: 'assets/catalog/badges/tier_badge_amethyst.png',
+    ),
+    _TierOption(
+      id: 'onyx',
+      label: 'Onyx',
+      assetPath: 'assets/catalog/badges/tier_badge_onyx.png',
+    ),
+    _TierOption(
+      id: 'platinum',
+      label: 'Platinum',
+      assetPath: 'assets/catalog/badges/tier_badge_platinum.png',
+    ),
   ];
 
   @override
@@ -162,19 +189,76 @@ class _CatalogBrowser extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  'Wallpaper Catalog',
-                  style: Theme.of(context).textTheme.displaySmall?.copyWith(
-                    color: CatalogPreviewSection.textColor,
-                    fontWeight: FontWeight.w800,
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(24),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(28),
+                    border: Border.all(
+                      color: CatalogPreviewSection.accentColor.withAlpha(90),
+                    ),
+                    gradient: LinearGradient(
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      colors: [
+                        CatalogPreviewSection.accentColor.withAlpha(36),
+                        CatalogPreviewSection.cardRaisedColor,
+                        CatalogPreviewSection.baseColor,
+                      ],
+                    ),
                   ),
-                ),
-                const SizedBox(height: 12),
-                Text(
-                  'Der Web-Start landet jetzt direkt auf dem Vollkatalog statt auf einer separaten Landing-Teaserflaeche.',
-                  style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                    color: CatalogPreviewSection.mutedColor,
-                    height: 1.45,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Wrap(
+                        spacing: 10,
+                        runSpacing: 10,
+                        children: const [
+                          _InfoPill(
+                            icon: Icons.verified_rounded,
+                            label: 'Official Android live wallpaper catalog',
+                            tone: CatalogPreviewSection.accentColor,
+                          ),
+                          _InfoPill(
+                            icon: Icons.rocket_launch_rounded,
+                            label: 'Production launch in under a week',
+                            tone: Color(0xFFFFC857),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 18),
+                      Text(
+                        'dotexe.pro',
+                        style: Theme.of(context).textTheme.displaySmall
+                            ?.copyWith(
+                              color: CatalogPreviewSection.textColor,
+                              fontWeight: FontWeight.w800,
+                            ),
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        'Animated live wallpapers for Android',
+                        style: Theme.of(context).textTheme.headlineSmall
+                            ?.copyWith(
+                              color: CatalogPreviewSection.textColor,
+                              fontWeight: FontWeight.w700,
+                            ),
+                      ),
+                      const SizedBox(height: 12),
+                      Text(
+                        'Explore fantasy, sci-fi, AMOLED and premium motion wallpapers in the official dotexe.pro catalog. Install the Android app on Google Play or browse the full live catalog below.',
+                        style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                          color: CatalogPreviewSection.mutedColor,
+                          height: 1.45,
+                        ),
+                      ),
+                      const SizedBox(height: 18),
+                      FilledButton.icon(
+                        onPressed: _launchPlayStoreListing,
+                        icon: const Icon(Icons.android_rounded),
+                        label: const Text('Get it on Google Play'),
+                      ),
+                    ],
                   ),
                 ),
                 const SizedBox(height: 18),
@@ -210,8 +294,34 @@ class _CatalogBrowser extends StatelessWidget {
                   title: 'Tier',
                   children: _tierOptions
                       .map((option) {
+                        final tone = option.id == null
+                            ? CatalogPreviewSection.outlineColor
+                            : catalogTierColor(option.id);
                         return ChoiceChip(
+                          avatar: option.assetPath == null
+                              ? null
+                              : Image.asset(
+                                  option.assetPath!,
+                                  width: 22,
+                                  height: 22,
+                                  fit: BoxFit.contain,
+                                ),
                           label: Text(option.label),
+                          labelStyle: Theme.of(context).textTheme.labelLarge
+                              ?.copyWith(
+                                color: CatalogPreviewSection.textColor,
+                                fontWeight: selectedTier == option.id
+                                    ? FontWeight.w700
+                                    : FontWeight.w600,
+                              ),
+                          backgroundColor: CatalogPreviewSection.cardColor,
+                          selectedColor: tone.withAlpha(40),
+                          showCheckmark: false,
+                          side: BorderSide(
+                            color: selectedTier == option.id
+                                ? tone
+                                : CatalogPreviewSection.outlineColor,
+                          ),
                           selected: selectedTier == option.id,
                           onSelected: (_) => onTierSelected(
                             selectedTier == option.id ? null : option.id,
@@ -614,8 +724,13 @@ class _EmptyCatalogState extends StatelessWidget {
 }
 
 class _TierOption {
-  const _TierOption({required this.id, required this.label});
+  const _TierOption({required this.id, required this.label, this.assetPath});
 
   final String? id;
   final String label;
+  final String? assetPath;
+}
+
+Future<void> _launchPlayStoreListing() async {
+  await launchUrl(_playStoreListingUri, mode: LaunchMode.platformDefault);
 }
