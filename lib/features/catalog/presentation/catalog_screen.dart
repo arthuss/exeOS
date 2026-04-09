@@ -4,13 +4,9 @@ import 'package:url_launcher/url_launcher.dart';
 
 import '../../legal/presentation/widgets/legal_footer.dart';
 import '../data/catalog_feed_repository.dart';
+import 'catalog_links.dart';
 import 'catalog_tier_branding.dart';
 import 'widgets/catalog_preview_section.dart';
-
-const String _androidPackageName = 'com.exeget.livewallpaper';
-final Uri _playStoreListingUri = Uri.parse(
-  'https://play.google.com/store/apps/details?id=$_androidPackageName',
-);
 
 class CatalogScreen extends StatefulWidget {
   const CatalogScreen({super.key});
@@ -738,7 +734,7 @@ class _CatalogHeroContent extends StatelessWidget {
             FilledButton.icon(
               onPressed: onLaunchPlay,
               icon: const Icon(Icons.android_rounded),
-              label: const Text('Get it on Google Play'),
+              label: const Text(catalogPrimaryInstallLabel),
               style: FilledButton.styleFrom(
                 padding: const EdgeInsets.symmetric(
                   horizontal: 20,
@@ -999,5 +995,5 @@ class _TierOption {
 }
 
 Future<void> _launchPlayStoreListing() async {
-  await launchUrl(_playStoreListingUri, mode: LaunchMode.platformDefault);
+  await launchUrl(catalogPrimaryInstallUri, mode: LaunchMode.platformDefault);
 }

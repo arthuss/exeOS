@@ -4,6 +4,7 @@ import 'package:url_launcher/url_launcher.dart';
 
 import '../../legal/presentation/widgets/legal_footer.dart';
 import '../data/catalog_feed_repository.dart';
+import 'catalog_links.dart';
 import 'widgets/catalog_preview_section.dart';
 import 'widgets/embedded_preview_video.dart';
 
@@ -155,7 +156,7 @@ class _DetailBody extends StatelessWidget {
             OutlinedButton.icon(
               onPressed: _launchPlayStoreListing,
               icon: const Icon(Icons.shop_rounded),
-              label: const Text('Bei Google Play'),
+              label: const Text(catalogPrimaryInstallLabel),
             ),
           ],
         ),
@@ -525,25 +526,20 @@ Future<void> _launchInAndroidApp(CatalogFeedItem item) async {
 }
 
 Future<void> _launchPlayStoreListing() async {
-  await launchUrl(_playStoreListingUri, mode: LaunchMode.externalApplication);
+  await launchUrl(catalogPrimaryInstallUri, mode: LaunchMode.externalApplication);
 }
 
 Uri _androidIntentUriFor(String wallpaperRef) {
   final normalizedRef = wallpaperRef.trim().isEmpty
       ? 'unknown'
       : wallpaperRef.trim();
-  final fallback = Uri.encodeComponent(_playStoreListingUri.toString());
+  final fallback = Uri.encodeComponent(catalogPrimaryInstallUri.toString());
   return Uri.parse(
     'intent://w/$normalizedRef'
-    '#Intent;scheme=exeget;package=$_androidPackageName;'
+    '#Intent;scheme=exeget;package=$androidPackageName;'
     'S.browser_fallback_url=$fallback;end',
   );
 }
-
-const String _androidPackageName = 'com.exeget.livewallpaper';
-final Uri _playStoreListingUri = Uri.parse(
-  'https://play.google.com/store/apps/details?id=$_androidPackageName',
-);
 
 Color _tierColorFor(CatalogFeedItem item) {
   switch (item.tierId?.toLowerCase()) {

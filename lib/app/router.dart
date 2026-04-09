@@ -11,7 +11,11 @@ import '../features/settings/presentation/settings_screen.dart';
 
 final GoRouter appRouter = GoRouter(
   routes: <RouteBase>[
-    GoRoute(path: '/catalog', redirect: (_, __) => '/'),
+    GoRoute(
+      path: '/catalog',
+      pageBuilder: (BuildContext context, GoRouterState state) =>
+          const NoTransitionPage(child: CatalogScreen()),
+    ),
     GoRoute(
       path: '/catalog/:wallpaperId',
       redirect: (BuildContext context, GoRouterState state) =>
