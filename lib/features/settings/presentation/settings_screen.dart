@@ -120,7 +120,7 @@ class SettingsScreen extends StatelessWidget {
                           label: const Text('Refresh owner'),
                         ),
                         OutlinedButton.icon(
-                          onPressed: () => context.go('/'),
+                          onPressed: () => context.go('/catalog'),
                           icon: const Icon(Icons.grid_view_rounded),
                           label: const Text('Open catalog'),
                         ),

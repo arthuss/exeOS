@@ -54,7 +54,7 @@ class HomeScreen extends StatelessWidget {
               runSpacing: 12,
               children: [
                 FilledButton.icon(
-                  onPressed: () => context.go('/'),
+                  onPressed: () => context.go('/catalog'),
                   icon: const Icon(Icons.grid_view_rounded),
                   label: const Text('Full catalog'),
                 ),
@@ -72,7 +72,7 @@ class HomeScreen extends StatelessWidget {
                   'Der Katalog sitzt direkt auf der Startflaeche und zieht seine Vorschau jetzt aus den exportierten Hub-Feeds. Die Weboberflaeche bleibt zunaechst read-only und image-first.',
               includeSurface: true,
               showBrowseAction: true,
-              onBrowseTap: () => context.go('/'),
+              onBrowseTap: () => context.go('/catalog'),
               onItemTap: (item) =>
                   context.push('/w/${item.canonicalRef}', extra: item),
               layout: CatalogPreviewLayout.compact,

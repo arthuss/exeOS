@@ -31,7 +31,7 @@ class LegalDocumentScreen extends StatelessWidget {
               Navigator.of(context).maybePop();
               return;
             }
-            context.go('/');
+            context.go('/catalog');
           },
           icon: Icon(canPop ? Icons.arrow_back_rounded : Icons.home_rounded),
         ),

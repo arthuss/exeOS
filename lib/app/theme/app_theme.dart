@@ -2,11 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class AppTheme {
-  static const _seed = Color(0xFF5BB7FF);
-  static const _darkBackground = Color(0xFF08111D);
-  static const _darkSurface = Color(0xFF111C2C);
-  static const _lightBackground = Color(0xFFF4F7FB);
-  static const _lightSurface = Color(0xFFFFFFFF);
+  static const _seed = Color(0xFFD56DFF);
+  static const _darkBackground = Color(0xFF07030D);
+  static const _darkSurface = Color(0xFF140A1F);
+  static const _lightBackground = Color(0xFFFAF5FF);
+  static const _lightSurface = Color(0xFFFFFBFF);
 
   static ThemeData light() {
     final scheme = ColorScheme.fromSeed(
@@ -30,7 +30,7 @@ class AppTheme {
     return _buildTheme(
       scheme: scheme,
       scaffoldBackground: _darkBackground,
-      appBarBackground: const Color(0xFF0D1725),
+      appBarBackground: const Color(0xFF11071A),
     );
   }
 
@@ -58,14 +58,8 @@ class AppTheme {
         fontSize: 16,
         fontWeight: FontWeight.w600,
       ),
-      bodyLarge: GoogleFonts.ibmPlexSans(
-        fontSize: 16,
-        height: 1.35,
-      ),
-      bodyMedium: GoogleFonts.ibmPlexSans(
-        fontSize: 14,
-        height: 1.4,
-      ),
+      bodyLarge: GoogleFonts.ibmPlexSans(fontSize: 16, height: 1.35),
+      bodyMedium: GoogleFonts.ibmPlexSans(fontSize: 14, height: 1.4),
       labelLarge: GoogleFonts.ibmPlexSans(
         fontSize: 14,
         fontWeight: FontWeight.w600,

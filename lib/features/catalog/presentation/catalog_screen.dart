@@ -101,22 +101,10 @@ class _CatalogScreenState extends State<CatalogScreen> {
               onCollectionSelected: (value) =>
                   setState(() => _selectedCollection = value),
               onClearFilters: _clearFilters,
-              onBrowseCatalog: _scrollToCatalog,
             );
           },
         ),
       ),
-    );
-  }
-
-  void _scrollToCatalog() {
-    if (!_scrollController.hasClients) {
-      return;
-    }
-    _scrollController.animateTo(
-      520,
-      duration: const Duration(milliseconds: 500),
-      curve: Curves.easeOutCubic,
     );
   }
 }
@@ -135,7 +123,6 @@ class _CatalogBrowser extends StatelessWidget {
     required this.onTagSelected,
     required this.onCollectionSelected,
     required this.onClearFilters,
-    required this.onBrowseCatalog,
   });
 
   final ScrollController scrollController;
@@ -150,7 +137,6 @@ class _CatalogBrowser extends StatelessWidget {
   final ValueChanged<String?> onTagSelected;
   final ValueChanged<String?> onCollectionSelected;
   final VoidCallback onClearFilters;
-  final VoidCallback onBrowseCatalog;
 
   static const List<_TierOption> _tierOptions = <_TierOption>[
     _TierOption(id: null, label: 'Alle'),
@@ -207,9 +193,12 @@ class _CatalogBrowser extends StatelessWidget {
               children: [
                 Container(
                   width: double.infinity,
-                  padding: const EdgeInsets.all(26),
+                  padding: EdgeInsets.symmetric(
+                    horizontal: isDesktopWidth(context) ? 22 : 20,
+                    vertical: isDesktopWidth(context) ? 18 : 20,
+                  ),
                   decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(28),
+                    borderRadius: BorderRadius.circular(24),
                     border: Border.all(
                       color: CatalogPreviewSection.accentColor.withAlpha(90),
                     ),
@@ -226,10 +215,13 @@ class _CatalogBrowser extends StatelessWidget {
                   child: LayoutBuilder(
                     builder: (context, constraints) {
                       final isWide = constraints.maxWidth >= 980;
+                      final visualWidth = (constraints.maxWidth * 0.31).clamp(
+                        280.0,
+                        390.0,
+                      );
                       final content = _CatalogHeroContent(
                         isWide: isWide,
                         onLaunchPlay: _launchPlayStoreListing,
-                        onBrowseCatalog: onBrowseCatalog,
                       );
                       final visual = _CatalogHeroVisual(isWide: isWide);
 
@@ -245,17 +237,17 @@ class _CatalogBrowser extends StatelessWidget {
                       }
 
                       return Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
+                        crossAxisAlignment: CrossAxisAlignment.center,
                         children: [
-                          Expanded(flex: 12, child: content),
-                          const SizedBox(width: 34),
-                          Expanded(flex: 8, child: visual),
+                          Expanded(child: content),
+                          const SizedBox(width: 22),
+                          SizedBox(width: visualWidth, child: visual),
                         ],
                       );
                     },
                   ),
                 ),
-                const SizedBox(height: 26),
+                const SizedBox(height: 18),
                 _CatalogBridge(
                   generatedLabel: generatedLabel,
                   totalCount: data.allItems.length,
@@ -419,7 +411,7 @@ class _CatalogBrowser extends StatelessWidget {
   }
 
   List<CatalogFeedItem> _filterItems(List<CatalogFeedItem> items) {
-    final normalizedQuery = query.trim().toLowerCase();
+    final queryCandidates = _buildSearchCandidates(query);
     final filtered = items
         .where((item) {
           final normalizedTier = _resolveTierId(item);
@@ -440,22 +432,76 @@ class _CatalogBrowser extends StatelessWidget {
               )) {
             return false;
           }
-          if (normalizedQuery.isEmpty) {
+          if (queryCandidates.isEmpty) {
             return true;
           }
-          final haystack = <String>[
-            item.title,
-            item.description ?? '',
-            ...item.tags,
-            ...item.collections,
-            item.tierLabel,
-          ].join(' ').toLowerCase();
-          return haystack.contains(normalizedQuery);
+          final haystacks = _buildSearchHaystacks(item);
+          return queryCandidates.any(
+            (candidate) =>
+                haystacks.any((haystack) => haystack.contains(candidate)),
+          );
         })
         .toList(growable: false);
 
     filtered.sort((a, b) => b.updatedAt.compareTo(a.updatedAt));
     return filtered;
+  }
+
+  List<String> _buildSearchHaystacks(CatalogFeedItem item) {
+    final values = <String>{
+      _canonicalizeSearchText(item.id),
+      _canonicalizeSearchText(item.canonicalRef),
+      _canonicalizeSearchText(item.title),
+      _canonicalizeSearchText(item.displayTitle),
+      _canonicalizeSearchText(item.description ?? ''),
+      _canonicalizeSearchText(item.displayDescription ?? ''),
+      _canonicalizeSearchText(item.tierLabel),
+      ...item.tags.map(_canonicalizeSearchText),
+      ...item.collections.map(_canonicalizeSearchText),
+      ..._buildProductAliases(item.id),
+      ..._buildProductAliases(item.canonicalRef),
+    };
+    return values.where((value) => value.isNotEmpty).toList(growable: false);
+  }
+
+  List<String> _buildSearchCandidates(String rawQuery) {
+    final normalized = _canonicalizeSearchText(rawQuery);
+    if (normalized.isEmpty) {
+      return const <String>[];
+    }
+    return <String>{
+      normalized,
+      ..._buildProductAliases(rawQuery),
+    }.where((value) => value.isNotEmpty).toList(growable: false);
+  }
+
+  List<String> _buildProductAliases(String rawValue) {
+    final normalized = _canonicalizeSearchText(rawValue);
+    if (normalized.isEmpty) {
+      return const <String>[];
+    }
+
+    final compact = normalized.replaceAll(' ', '');
+    final digits = RegExp(
+      r'\d+',
+    ).allMatches(compact).map((match) => match.group(0) ?? '').join();
+
+    final aliases = <String>{normalized, compact};
+    if (digits.isNotEmpty) {
+      aliases.add(digits);
+      aliases.add('product$digits');
+      aliases.add('product $digits');
+    }
+    return aliases.where((value) => value.isNotEmpty).toList(growable: false);
+  }
+
+  String _canonicalizeSearchText(String raw) {
+    return raw
+        .trim()
+        .toLowerCase()
+        .replaceAll(RegExp(r'[^a-z0-9]+'), ' ')
+        .replaceAll(RegExp(r'\s+'), ' ')
+        .trim();
   }
 
   String _resolveTierId(CatalogFeedItem item) {
@@ -656,20 +702,17 @@ class _InfoPill extends StatelessWidget {
 }
 
 class _CatalogHeroContent extends StatelessWidget {
-  const _CatalogHeroContent({
-    required this.isWide,
-    required this.onLaunchPlay,
-    required this.onBrowseCatalog,
-  });
+  const _CatalogHeroContent({required this.isWide, required this.onLaunchPlay});
 
   final bool isWide;
   final VoidCallback onLaunchPlay;
-  final VoidCallback onBrowseCatalog;
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisSize: MainAxisSize.min,
       children: [
         Wrap(
           spacing: 10,
@@ -687,21 +730,22 @@ class _CatalogHeroContent extends StatelessWidget {
             ),
           ],
         ),
-        SizedBox(height: isWide ? 26 : 20),
+        SizedBox(height: isWide ? 16 : 18),
         Row(
           mainAxisSize: MainAxisSize.min,
           children: [
             Image.asset(
-              'assets/branding/a-logo1024-glow.png',
-              width: isWide ? 78 : 56,
-              height: isWide ? 78 : 56,
+              'assets/branding/play_store_512.png',
+              width: isWide ? 64 : 52,
+              height: isWide ? 64 : 52,
               fit: BoxFit.contain,
             ),
-            const SizedBox(width: 14),
+            const SizedBox(width: 12),
             Flexible(
               child: Text(
                 'dotexe.pro',
-                style: Theme.of(context).textTheme.displaySmall?.copyWith(
+                style: theme.textTheme.headlineMedium?.copyWith(
+                  fontSize: isWide ? 30 : 26,
                   color: CatalogPreviewSection.textColor,
                   fontWeight: FontWeight.w800,
                 ),
@@ -709,56 +753,37 @@ class _CatalogHeroContent extends StatelessWidget {
             ),
           ],
         ),
-        const SizedBox(height: 10),
+        const SizedBox(height: 6),
         Text(
           'Animated live wallpapers for Android',
-          style: Theme.of(context).textTheme.displaySmall?.copyWith(
+          style: theme.textTheme.headlineMedium?.copyWith(
+            fontSize: isWide ? 26 : 24,
             color: CatalogPreviewSection.textColor,
             fontWeight: FontWeight.w700,
-            height: 1.02,
+            height: 1.05,
           ),
         ),
-        const SizedBox(height: 12),
+        const SizedBox(height: 10),
         Text(
-          'Explore fantasy, sci-fi, AMOLED and premium motion wallpapers in the official dotexe.pro catalog. Install the Android app on Google Play or browse the full live catalog below.',
-          style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+          'Explore fantasy, sci-fi, AMOLED and premium motion wallpapers in one live catalog. Install the Android app on Google Play and jump straight into the feed below.',
+          style: theme.textTheme.bodyLarge?.copyWith(
             color: CatalogPreviewSection.mutedColor,
-            height: 1.45,
+            height: 1.35,
           ),
-        ),
-        const SizedBox(height: 18),
-        Wrap(
-          spacing: 12,
-          runSpacing: 12,
-          children: [
-            FilledButton.icon(
-              onPressed: onLaunchPlay,
-              icon: const Icon(Icons.android_rounded),
-              label: const Text(catalogPrimaryInstallLabel),
-              style: FilledButton.styleFrom(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 20,
-                  vertical: 16,
-                ),
-              ),
-            ),
-            OutlinedButton.icon(
-              onPressed: onBrowseCatalog,
-              icon: const Icon(Icons.grid_view_rounded),
-              label: const Text('Browse catalog'),
-              style: OutlinedButton.styleFrom(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 18,
-                  vertical: 16,
-                ),
-              ),
-            ),
-          ],
         ),
         const SizedBox(height: 14),
+        FilledButton.icon(
+          onPressed: onLaunchPlay,
+          icon: const Icon(Icons.android_rounded),
+          label: const Text(catalogPrimaryInstallLabel),
+          style: FilledButton.styleFrom(
+            padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
+          ),
+        ),
+        const SizedBox(height: 10),
         Text(
           'Official site by exeget · Android app · Deep links · Full wallpaper catalog',
-          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+          style: theme.textTheme.bodyMedium?.copyWith(
             color: CatalogPreviewSection.mutedColor,
           ),
         ),
@@ -775,10 +800,10 @@ class _CatalogHeroVisual extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: EdgeInsets.all(isWide ? 12 : 10),
+      padding: EdgeInsets.all(isWide ? 8 : 10),
       decoration: BoxDecoration(
         color: CatalogPreviewSection.cardColor.withAlpha(160),
-        borderRadius: BorderRadius.circular(28),
+        borderRadius: BorderRadius.circular(24),
         border: Border.all(
           color: CatalogPreviewSection.outlineColor.withAlpha(180),
         ),
@@ -791,39 +816,39 @@ class _CatalogHeroVisual extends StatelessWidget {
         ],
       ),
       child: AspectRatio(
-        aspectRatio: isWide ? 1.12 : 1.28,
+        aspectRatio: isWide ? 1.86 : 1.28,
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: const [
             Expanded(
               child: _HeroTileCard(
                 assetPath: 'assets/branding/hero_tile_1.jpg',
-                topInset: 18,
-                bottomInset: 62,
+                topInset: 10,
+                bottomInset: 30,
               ),
             ),
-            SizedBox(width: 10),
+            SizedBox(width: 8),
             Expanded(
               child: _HeroTileCard(
                 assetPath: 'assets/branding/hero_tile_2.jpg',
                 topInset: 0,
-                bottomInset: 40,
+                bottomInset: 18,
               ),
             ),
-            SizedBox(width: 10),
+            SizedBox(width: 8),
             Expanded(
               child: _HeroTileCard(
                 assetPath: 'assets/branding/hero_tile_4.jpg',
-                topInset: 38,
-                bottomInset: 20,
+                topInset: 18,
+                bottomInset: 10,
               ),
             ),
-            SizedBox(width: 10),
+            SizedBox(width: 8),
             Expanded(
               child: _HeroTileCard(
                 assetPath: 'assets/branding/hero_tile_5.jpg',
-                topInset: 12,
-                bottomInset: 84,
+                topInset: 6,
+                bottomInset: 42,
               ),
             ),
           ],
@@ -832,6 +857,9 @@ class _CatalogHeroVisual extends StatelessWidget {
     );
   }
 }
+
+bool isDesktopWidth(BuildContext context) =>
+    MediaQuery.sizeOf(context).width >= 980;
 
 class _HeroTileCard extends StatelessWidget {
   const _HeroTileCard({
@@ -851,9 +879,7 @@ class _HeroTileCard extends StatelessWidget {
       child: Container(
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(24),
-          border: Border.all(
-            color: Colors.white.withAlpha(18),
-          ),
+          border: Border.all(color: Colors.white.withAlpha(18)),
           boxShadow: [
             BoxShadow(
               color: Colors.black.withAlpha(32),
@@ -864,10 +890,7 @@ class _HeroTileCard extends StatelessWidget {
         ),
         child: ClipRRect(
           borderRadius: BorderRadius.circular(24),
-          child: Image.asset(
-            assetPath,
-            fit: BoxFit.cover,
-          ),
+          child: Image.asset(assetPath, fit: BoxFit.cover),
         ),
       ),
     );

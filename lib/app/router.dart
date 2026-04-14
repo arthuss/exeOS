@@ -107,8 +107,7 @@ final GoRouter appRouter = GoRouter(
     ),
     GoRoute(
       path: '/',
-      pageBuilder: (BuildContext context, GoRouterState state) =>
-          const NoTransitionPage(child: CatalogScreen()),
+      redirect: (BuildContext context, GoRouterState state) => '/catalog',
     ),
   ],
 );

@@ -8,7 +8,8 @@ Phase A focuses on a productized shell:
 
 - branded app structure
 - router-based navigation
-- full-catalog landing surface backed by static hub feeds
+- static product landing page at `/`
+- feed-backed Flutter catalog shell under `/catalog`
 - canonical wallpaper landing routes under `/w/:wallpaperRef`
 - centralized legal routes under `/privacy-policy`, `/terms-of-service`, `/delete-account`, and `/impressum`
 - settings and theme handling
@@ -24,6 +25,9 @@ flutter pub get
 flutter run -d chrome
 ```
 
+This previews the Flutter app shell itself. The production Hosting output additionally stages the sibling workspace landing page from `..\landingpage` onto the public root `/`.
+The landing page prefers the mirrored Hub feed at `/feeds/landing/videos.json` for its rotating preview-video pool and only falls back to the local `landing-videos.json` stub for local-only scenarios.
+
 ## Near-term roadmap
 
 1. Google sign-in on web
@@ -32,6 +36,8 @@ flutter run -d chrome
 
 ## Public link shape
 
+- the public root `/` is a static landing page
+- the Flutter app shell starts at `/catalog`
 - canonical public wallpaper URLs live under `/w/:wallpaperRef`
 - legacy `/catalog/:wallpaperId` links redirect into `/w/...`
 
@@ -47,10 +53,12 @@ firebase experiments:enable webframeworks
 firebase target:apply hosting webapp dotexe-pro
 ```
 
-Deploy the current Flutter web app:
+Build the staged Hosting output (`index.html` landing + `app.html` Flutter shell) and deploy it:
 
 ```bash
-pwsh -ExecutionPolicy Bypass -File .\scripts\sync-hub-feeds.ps1
 $env:Path = 'C:\tools\flutter\bin;' + $env:Path
-firebase deploy --only hosting:webapp
+pwsh -ExecutionPolicy Bypass -File .\scripts\build-hosting.ps1
+firebase deploy --only hosting:webapp --project wallpaper-management-hub
 ```
+
+If you want the auth-enabled web shell in that build, export `EXEOS_FIREBASE_API_KEY` before running `build-hosting.ps1`.

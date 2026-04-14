@@ -1,8 +1,52 @@
 {
   "hosting": {
     "target": "webapp",
-    "source": ".",
+    "public": "build/hosting",
     "rewrites": [
+      {
+        "source": "/catalog",
+        "destination": "/app.html"
+      },
+      {
+        "source": "/catalog/**",
+        "destination": "/app.html"
+      },
+      {
+        "source": "/w/**",
+        "destination": "/app.html"
+      },
+      {
+        "source": "/settings",
+        "destination": "/app.html"
+      },
+      {
+        "source": "/auth/**",
+        "destination": "/app.html"
+      },
+      {
+        "source": "/connect/**",
+        "destination": "/app.html"
+      },
+      {
+        "source": "/integrations/**",
+        "destination": "/app.html"
+      },
+      {
+        "source": "/privacy-policy",
+        "destination": "/app.html"
+      },
+      {
+        "source": "/terms-of-service",
+        "destination": "/app.html"
+      },
+      {
+        "source": "/delete-account",
+        "destination": "/app.html"
+      },
+      {
+        "source": "/impressum",
+        "destination": "/app.html"
+      },
       {
         "source": "**",
         "destination": "/index.html"
@@ -20,6 +64,15 @@
       },
       {
         "source": "/index.html",
+        "headers": [
+          {
+            "key": "Cache-Control",
+            "value": "no-cache, no-store, must-revalidate"
+          }
+        ]
+      },
+      {
+        "source": "/app.html",
         "headers": [
           {
             "key": "Cache-Control",
@@ -56,6 +109,15 @@
       },
       {
         "source": "/.well-known/assetlinks.json",
+        "headers": [
+          {
+            "key": "Cache-Control",
+            "value": "no-cache, no-store, must-revalidate"
+          }
+        ]
+      },
+      {
+        "source": "/landing-videos.json",
         "headers": [
           {
             "key": "Cache-Control",

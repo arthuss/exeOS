@@ -25,13 +25,13 @@ class CatalogPreviewSection extends StatelessWidget {
   final ValueChanged<CatalogFeedItem>? onItemTap;
   final CatalogPreviewLayout layout;
 
-  static const Color _base = Color(0xFF0A0F18);
-  static const Color _card = Color(0xFF121A28);
-  static const Color _cardRaised = Color(0xFF172133);
-  static const Color _outline = Color(0xFF283348);
-  static const Color _text = Color(0xFFF3F6FF);
-  static const Color _muted = Color(0xFFA8B3CB);
-  static const Color _accent = Color(0xFF63D5FF);
+  static const Color _base = Color(0xFF09040F);
+  static const Color _card = Color(0xFF12081B);
+  static const Color _cardRaised = Color(0xFF1A0D27);
+  static const Color _outline = Color(0xFF3C2450);
+  static const Color _text = Color(0xFFF8F1FF);
+  static const Color _muted = Color(0xFFC5AFD9);
+  static const Color _accent = Color(0xFFD56DFF);
   static const Color baseColor = _base;
   static const Color cardColor = _card;
   static const Color cardRaisedColor = _cardRaised;
@@ -501,10 +501,7 @@ class CatalogWallpaperCard extends StatelessWidget {
                   CatalogPreviewSection._card,
                   CatalogPreviewSection._cardRaised,
                 ]
-              : [
-                  CatalogPreviewSection._card,
-                  CatalogPreviewSection._card,
-                ],
+              : [CatalogPreviewSection._card, CatalogPreviewSection._card],
         ),
         boxShadow: _usesTierFrame
             ? [
@@ -548,9 +545,7 @@ class CatalogWallpaperCard extends StatelessWidget {
                                   WebHtmlElementStrategy.prefer,
                               errorBuilder: (_, __, ___) => _FallbackPreview(),
                               loadingBuilder: (context, child, progress) =>
-                                  progress == null
-                                      ? child
-                                      : _FallbackPreview(),
+                                  progress == null ? child : _FallbackPreview(),
                             ),
                     ),
                   ),

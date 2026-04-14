@@ -12,12 +12,32 @@ if (-not (Test-Path $source)) {
     throw "Feed source not found: $source. Build hub feeds first."
 }
 
-if (Test-Path $target) {
-    Remove-Item -LiteralPath $target -Recurse -Force
+$resolvedTargetRepo = (Resolve-Path -LiteralPath $TargetRepo).Path
+$resolvedTarget = Join-Path $resolvedTargetRepo "web\feeds"
+if (-not $resolvedTarget.StartsWith($resolvedTargetRepo.TrimEnd('\') + '\', [System.StringComparison]::OrdinalIgnoreCase)) {
+    throw "Refusing to sync outside target repo: $resolvedTarget"
 }
 
-New-Item -ItemType Directory -Path $target | Out-Null
-Copy-Item -Path (Join-Path $source "*") -Destination $target -Recurse -Force
+New-Item -ItemType Directory -Path $resolvedTarget -Force | Out-Null
 
-$fileCount = (Get-ChildItem -Path $target -Recurse -File).Count
-Write-Host "Synced $fileCount feed files from $source to $target"
+$robocopyArgs = @(
+    $source,
+    $resolvedTarget,
+    '/MIR',
+    '/R:2',
+    '/W:1',
+    '/NFL',
+    '/NDL',
+    '/NJH',
+    '/NJS',
+    '/NP'
+)
+
+& robocopy @robocopyArgs | Out-Null
+$robocopyExit = $LASTEXITCODE
+if ($robocopyExit -ge 8) {
+    throw "robocopy failed with exit code $robocopyExit while syncing feeds."
+}
+
+$fileCount = (Get-ChildItem -Path $resolvedTarget -Recurse -File).Count
+Write-Host "Synced $fileCount feed files from $source to $resolvedTarget"

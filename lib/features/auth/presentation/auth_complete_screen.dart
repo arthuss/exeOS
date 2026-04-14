@@ -126,7 +126,7 @@ class _AuthCompleteScreenState extends State<AuthCompleteScreen> {
                               child: const Text('Continue'),
                             ),
                             OutlinedButton(
-                              onPressed: () => context.go('/'),
+                              onPressed: () => context.go('/catalog'),
                               child: const Text('Open catalog'),
                             ),
                           ],
