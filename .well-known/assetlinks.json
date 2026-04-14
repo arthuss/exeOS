@@ -1,13 +1,15 @@
 [
   {
     "relation": [
-      "delegate_permission/common.handle_all_urls"
+      "delegate_permission/common.handle_all_urls",
+      "delegate_permission/common.get_login_creds"
     ],
     "target": {
       "namespace": "android_app",
       "package_name": "com.exeget.livewallpaper",
       "sha256_cert_fingerprints": [
-        "11:3D:14:DE:99:98:6B:F9:B8:C1:A2:8B:50:D9:9B:4C:3D:42:D6:CD:C8:1B:41:77:EF:61:68:87:EA:3A:BC:7A"
+        "11:3D:14:DE:99:98:6B:F9:B8:C1:A2:8B:50:D9:9B:4C:3D:42:D6:CD:C8:1B:41:77:EF:61:68:87:EA:3A:BC:7A",
+        "AD:4B:2D:14:87:5E:42:9D:1F:9D:F7:E8:C0:56:DF:B2:63:CE:C5:35:68:9F:D8:9F:5C:B2:2D:A1:9A:9C:D1:83"
       ]
     }
   }

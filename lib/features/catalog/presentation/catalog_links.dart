@@ -1,7 +1,7 @@
 final Uri catalogPrimaryInstallUri = Uri.parse(
-  'https://play.google.com/apps/internaltest/4701169232603654739',
+  'https://play.google.com/store/apps/details?id=com.exeget.livewallpaper',
 );
 
-const String catalogPrimaryInstallLabel = 'Join Android Early Access';
+const String catalogPrimaryInstallLabel = 'Get it on Google Play';
 
 const String androidPackageName = 'com.exeget.livewallpaper';
