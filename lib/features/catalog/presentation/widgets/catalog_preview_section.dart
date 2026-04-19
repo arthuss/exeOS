@@ -534,8 +534,9 @@ class CatalogWallpaperCard extends StatelessWidget {
                     borderRadius: const BorderRadius.vertical(
                       top: Radius.circular(24),
                     ),
-                    child: AspectRatio(
-                      aspectRatio: 9 / 16,
+                    child: SizedBox(
+                      height: 304,
+                      width: double.infinity,
                       child: item.previewImageUrl == null
                           ? _FallbackPreview()
                           : Image.network(
@@ -623,7 +624,7 @@ class CatalogWallpaperCard extends StatelessWidget {
                 ],
               ),
               Padding(
-                padding: const EdgeInsets.fromLTRB(16, 14, 16, 16),
+                padding: const EdgeInsets.fromLTRB(16, 14, 16, 14),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -641,7 +642,7 @@ class CatalogWallpaperCard extends StatelessWidget {
                       item.description?.trim().isNotEmpty == true
                           ? item.description!
                           : 'Read-only Preview aus dem Live-Katalog.',
-                      maxLines: 3,
+                      maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                       style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                         color: CatalogPreviewSection._muted,
